@@ -1,1096 +1,807 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FounderDash | Bottle Code</title>
-    <link rel="icon" href="https://imgur.com/4gOYmU0">
-    <link rel="manifest" href="./assets/manifest.json">
-    <meta name="theme-color" content="#0F0B1A">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <!-- Standalone PWA: CSS and JS are embedded in this file -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FounderDash | Bottle Code</title>
+<link rel="icon" href="https://imgur.com/4gOYmU0">
+<link rel="manifest" href="./assets/manifest.json">
+<meta name="theme-color" content="#ffffff">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --pink: #FF375F;
+  --pink-dark: #D63054;
+  --pink-light: #FFE5EC;
+  --black: #1D1D1F;
+  --gray: #6E6E73;
+  --gray-light: #F5F5F7;
+  --white: #FFFFFF;
+  --border: rgba(0,0,0,0.08);
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --ease: cubic-bezier(0.4,0,0.2,1);
+  --ease-out: cubic-bezier(0,0,0.2,1);
+  --dur: 0.4s;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased}
+body{font-family:var(--font);background:var(--white);color:var(--black);overflow-x:hidden}
 
-    <style>
-        /* =============================================
-           DESIGN TOKENS — Material You Dark Theme
-        ============================================= */
-        :root {
-            --m3-primary:        #D0BCFF;
-            --m3-on-primary:     #381E72;
-            --m3-primary-c:      #4F378B;
-            --m3-on-primary-c:   #EADDFF;
-            --m3-secondary:      #CCC2DC;
-            --m3-tertiary:       #EFB8C8;
-            --m3-error:          #F2B8B5;
-            --m3-bg:             #0F0B1A;
-            --m3-surface:        #141218;
-            --m3-surface-v:      #1D1B20;
-            --m3-surface-c-lo:   #1D1B20;
-            --m3-surface-c-mid:  #231F26;
-            --m3-surface-c-hi:   #2B2930;
-            --m3-on-surface:     #E6E1E5;
-            --m3-on-surf-v:      #CAC4D0;
-            --m3-outline:        #49454F;
-            --m3-outline-v:      #79747E;
-            --m3-scrim:          rgba(0,0,0,0.7);
+/* ── NAVBAR ── */
+.site-header{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  height:52px;padding:0 20px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(255,255,255,0.85);
+  backdrop-filter:saturate(180%) blur(20px);
+  -webkit-backdrop-filter:saturate(180%) blur(20px);
+  border-bottom:1px solid var(--border);
+  opacity:0;pointer-events:none;
+  transform:translateY(-100%);
+  transition:opacity 0.6s var(--ease-out),transform 0.6s var(--ease-out);
+}
+.site-header.visible{opacity:1;pointer-events:all;transform:translateY(0)}
+.nav-brand{display:flex;align-items:center;gap:8px;text-decoration:none;color:var(--black)}
+.nav-logo{height:26px;border-radius:6px}
+.nav-brand-text{font-size:.85rem;font-weight:600;color:var(--gray)}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-cta{
+  padding:7px 16px;border-radius:100px;background:var(--pink);
+  color:#fff;border:none;font:600 .8rem var(--font);cursor:pointer;
+  transition:background var(--dur) var(--ease),transform var(--dur);
+}
+.nav-cta:hover{background:var(--pink-dark);transform:scale(1.03)}
+.avatar{width:32px;height:32px;border-radius:50%;border:2px solid var(--pink);cursor:pointer;display:none}
 
-            /* Glass Layer */
-            --glass-bg:          rgba(29, 27, 32, 0.72);
-            --glass-border:      rgba(208, 188, 255, 0.12);
-            --glass-blur:        16px;
+/* ── SCROLL VIDEO HERO ── */
+.scroll-hero{height:450vh;position:relative}
+.scroll-sticky{
+  position:sticky;top:0;height:100vh;width:100%;
+  overflow:hidden;background:#000;
+  display:flex;align-items:center;justify-content:center;
+}
+#scroll-video{width:100%;height:100%;object-fit:cover;display:block}
+.video-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 50%,rgba(255,255,255,0.7) 90%,#fff 100%);
+  pointer-events:none;
+}
+.scroll-progress-bar{
+  position:absolute;bottom:0;left:0;height:2px;width:0%;
+  background:var(--pink);z-index:20;transition:width .04s linear;
+}
+.scroll-hint{
+  position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  color:rgba(255,255,255,.7);font-size:.78rem;font-weight:500;
+  animation:bounce 2s ease-in-out infinite;user-select:none;z-index:10;
+}
+.scroll-hint .material-symbols-rounded{font-size:26px}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(7px)}}
 
-            /* Typography */
-            --font-display:      'Outfit', sans-serif;
-            --font-body:         'Roboto', sans-serif;
+/* ── HERO SECTION ── */
+.hero-section{
+  padding:100px 24px 80px;
+  text-align:center;
+  background:#fff;
+}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 14px;border-radius:100px;
+  background:var(--pink-light);color:var(--pink);
+  font-size:.75rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  margin-bottom:24px;
+}
+.hero-eyebrow .material-symbols-rounded{font-size:14px}
+.hero-h1{
+  font-size:clamp(2.8rem,7vw,5.5rem);
+  font-weight:800;line-height:1.05;letter-spacing:-.04em;
+  color:var(--black);margin-bottom:20px;
+}
+.hero-h1 .pink{color:var(--pink)}
+.hero-sub{
+  max-width:600px;margin:0 auto 40px;
+  font-size:1.15rem;line-height:1.65;color:var(--gray);font-weight:400;
+}
+.hero-google-badge{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:12px 20px;border-radius:16px;
+  border:1px solid var(--border);background:var(--gray-light);
+  font-size:.85rem;font-weight:500;color:var(--gray);
+  margin-bottom: 32px;
+}
+.google-dots{display:flex;gap:4px}
+.g-dot{width:10px;height:10px;border-radius:50%}
+.gsi-center{display:flex;justify-content:center;margin-bottom:16px}
+.hero-legal{font-size:.75rem;color:#aaa;margin-top:8px}
 
-            /* Easing */
-            --ease-emph:         cubic-bezier(0.2, 0, 0, 1);
-            --ease-std:          cubic-bezier(0.4, 0, 0.2, 1);
-            --ease-dec:          cubic-bezier(0, 0, 0.2, 1);
-            --dur-mid:           300ms;
-            --dur-long:          500ms;
-        }
+/* ── HORIZONTAL FEATURE GALLERY (Apple style) ── */
+.gallery-section{padding:80px 0;background:var(--gray-light);overflow:hidden}
+.gallery-header{padding:0 48px;margin-bottom:40px}
+.gallery-header h2{font-size:clamp(1.8rem,4vw,2.8rem);font-weight:700;letter-spacing:-.03em;color:var(--black)}
+.gallery-header p{font-size:1rem;color:var(--gray);margin-top:8px;max-width:500px}
+.gallery-track-wrap{position:relative;overflow:hidden}
+.gallery-track{
+  display:flex;gap:20px;padding:8px 48px 40px;
+  overflow-x:auto;scroll-snap-type:x mandatory;
+  scroll-behavior:smooth;
+  -ms-overflow-style:none;scrollbar-width:none;
+  cursor:grab;
+  -webkit-overflow-scrolling:touch;
+}
+.gallery-track:active{cursor:grabbing}
+.gallery-track::-webkit-scrollbar{display:none}
+.gallery-card{
+  flex-shrink:0;width:min(420px,80vw);
+  border-radius:28px;overflow:hidden;
+  background:var(--white);
+  border:1px solid var(--border);
+  scroll-snap-align:start;
+  transition:transform .3s var(--ease),box-shadow .3s var(--ease);
+  box-shadow:0 2px 16px rgba(0,0,0,.06);
+}
+.gallery-card:hover{transform:scale(1.02);box-shadow:0 8px 40px rgba(0,0,0,.12)}
+.card-image{
+  width:100%;height:240px;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;
+}
+.card-icon-bg{
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-size:80px;
+}
+.card-body{padding:28px}
+.card-tag{font-size:.72rem;font-weight:600;color:var(--pink);letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px}
+.card-body h3{font-size:1.3rem;font-weight:700;letter-spacing:-.02em;color:var(--black);margin-bottom:10px}
+.card-body p{font-size:.9rem;line-height:1.6;color:var(--gray)}
+.gallery-nav{display:flex;gap:8px;padding:0 48px;margin-top:16px}
+.gnav-btn{
+  width:36px;height:36px;border-radius:50%;background:var(--white);
+  border:1px solid var(--border);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s,transform .2s;
+  box-shadow:0 1px 6px rgba(0,0,0,.08);
+}
+.gnav-btn:hover{background:var(--pink);color:#fff;transform:scale(1.08)}
+.gnav-btn .material-symbols-rounded{font-size:18px}
 
-        /* =============================================
-           RESET & BASE
-        ============================================= */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── ANALYTICS PROMO BLOCK ── */
+.analytics-section{
+  padding:100px 48px;
+  background:var(--black);
+  color:#fff;
+  display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center;
+}
+.analytics-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 14px;border-radius:100px;
+  background:rgba(255,55,95,.15);color:var(--pink);
+  font-size:.75rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+  margin-bottom:24px;
+}
+.analytics-section h2{
+  font-size:clamp(2rem,4vw,3.2rem);font-weight:800;
+  letter-spacing:-.04em;line-height:1.1;
+  margin-bottom:20px;
+}
+.analytics-section h2 span{color:var(--pink)}
+.analytics-section p{font-size:1rem;line-height:1.7;color:rgba(255,255,255,.6);margin-bottom:32px}
+.analytics-perks{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:36px}
+.analytics-perks li{display:flex;align-items:center;gap:10px;font-size:.9rem;color:rgba(255,255,255,.8)}
+.analytics-perks li .material-symbols-rounded{color:var(--pink);font-size:20px}
+.analytics-cta{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:14px 28px;border-radius:100px;
+  background:var(--pink);color:#fff;
+  border:none;font:600 .95rem var(--font);cursor:pointer;
+  transition:background var(--dur),transform var(--dur);
+}
+.analytics-cta:hover{background:var(--pink-dark);transform:translateY(-2px)}
+.analytics-chart-wrap{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:28px;padding:28px;
+}
+.analytics-chart-wrap h4{font-size:.9rem;font-weight:500;color:rgba(255,255,255,.5);margin-bottom:20px}
+.mini-chart-wrap{height:200px;position:relative}
+.analytics-stats{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;
+}
+.a-stat{background:rgba(255,255,255,.05);border-radius:16px;padding:16px}
+.a-stat .num{font-size:1.5rem;font-weight:700;color:#fff}
+.a-stat .lbl{font-size:.75rem;color:rgba(255,255,255,.4);margin-top:4px}
 
-        html { scroll-behavior: smooth; }
+/* ── DASHBOARD VIEW ── */
+.view{display:none;opacity:0;transition:opacity .5s var(--ease-out)}
+.view.active{display:block;opacity:1}
+.hidden{display:none!important}
+#landing-view{display:block!important}
 
-        body {
-            font-family: var(--font-body);
-            background: var(--m3-bg);
-            color: var(--m3-on-surface);
-            min-height: 100vh;
-            overflow-x: hidden;
-            -webkit-tap-highlight-color: transparent;
-            /* Radial ambient glow */
-            background-image:
-                radial-gradient(ellipse 80% 60% at 20% 0%, rgba(103,80,164,0.18) 0%, transparent 70%),
-                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(208,188,255,0.08) 0%, transparent 70%);
-        }
+.dash-layout{display:flex;min-height:calc(100vh - 52px);padding-top:52px}
+.nav-rail{
+  width:84px;background:var(--gray-light);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;padding:24px 0;gap:8px;
+  position:sticky;top:52px;height:calc(100vh - 52px);flex-shrink:0;
+}
+.rail-btn{
+  width:60px;height:60px;border-radius:16px;border:none;background:none;
+  cursor:pointer;color:var(--gray);display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:3px;font:.65rem 500 var(--font);
+  transition:background .2s,color .2s;
+}
+.rail-btn:hover{background:rgba(0,0,0,.05)}
+.rail-btn.active{background:var(--pink-light);color:var(--pink)}
+.rail-btn .material-symbols-rounded{font-size:22px}
 
-        /* =============================================
-           RIPPLE EFFECT
-        ============================================= */
-        .ripple-host { position: relative; overflow: hidden; }
-        .ripple {
-            position: absolute;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.18);
-            transform: scale(0);
-            animation: rippleAnim 600ms linear forwards;
-            pointer-events: none;
-        }
-        @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
+.dash-content{flex:1;padding:32px;overflow-y:auto;background:var(--gray-light)}
+.dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.dash-header h2{font-size:1.8rem;font-weight:700;letter-spacing:-.03em;color:var(--black)}
+.status-chip{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:6px 14px;border-radius:100px;
+  background:var(--white);border:1px solid var(--border);
+  font-size:.8rem;font-weight:500;color:var(--gray);
+}
+.status-chip::before{content:'';width:7px;height:7px;border-radius:50%;background:#34C759;box-shadow:0 0 5px #34C759}
 
-        /* =============================================
-           HEADER / TOP-APP-BAR
-        ============================================= */
-        .bottle-header {
-            position: sticky;
-            top: 0;
-            z-index: 900;
-            height: 64px;
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(20, 18, 24, 0.88);
-            backdrop-filter: blur(var(--glass-blur));
-            -webkit-backdrop-filter: blur(var(--glass-blur));
-            border-bottom: 1px solid var(--glass-border);
-        }
+.cards-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:20px}
+.d-card{background:var(--white);border-radius:24px;padding:24px;border:1px solid var(--border);box-shadow:0 1px 12px rgba(0,0,0,.05)}
+.d-card h3{font-size:.9rem;font-weight:600;color:var(--gray);margin-bottom:16px;display:flex;align-items:center;gap:6px}
+.d-card h3 .material-symbols-rounded{font-size:18px;color:var(--pink)}
+.chart-area{height:260px}
+.form-card{grid-column:2;grid-row:1/3}
 
-        .branding-link {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            color: inherit;
-            transition: opacity var(--dur-mid) var(--ease-std);
-        }
-        .branding-link:hover { opacity: 0.75; }
+.field{position:relative;margin-bottom:16px}
+.field input,.field select{
+  width:100%;padding:14px 12px 4px;
+  background:var(--gray-light);border:1px solid var(--border);
+  border-radius:10px;font:1rem var(--font);color:var(--black);
+  outline:none;transition:border-color .2s;box-sizing:border-box;
+}
+.field input:focus,.field select:focus{border-color:var(--pink)}
+.field label{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:.82rem;color:var(--gray);pointer-events:none;transition:all .2s}
+.field input:focus+label,.field input:not(:placeholder-shown)+label{top:8px;font-size:.68rem;color:var(--pink);font-weight:600}
+.field select+label{top:8px;font-size:.68rem;color:var(--pink);font-weight:600}
+.field select{appearance:none}
 
-        .brand-logo {
-            height: 30px;
-            border-radius: 8px;
-            filter: drop-shadow(0 0 6px rgba(208,188,255,0.4));
-        }
+.submit-btn{
+  width:100%;padding:14px;border-radius:100px;
+  background:var(--pink);color:#fff;border:none;
+  font:600 .95rem var(--font);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .2s,transform .2s;position:relative;overflow:hidden;
+}
+.submit-btn:hover{background:var(--pink-dark);transform:translateY(-1px)}
+.submit-btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
 
-        .brand-text {
-            font-family: var(--font-display);
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--m3-on-surf-v);
-            letter-spacing: 0.01em;
-        }
+.goals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.goal-card{border-radius:20px;overflow:hidden;position:relative;aspect-ratio:3/4;cursor:pointer;transition:transform .3s var(--ease)}
+.goal-card:hover{transform:scale(1.04)}
+.goal-img{width:100%;height:100%;object-fit:cover;display:block}
+.goal-layer{position:absolute;bottom:0;left:0;right:0;padding:16px 12px 12px;background:linear-gradient(transparent,rgba(0,0,0,.8))}
+.goal-layer h4{font-size:.85rem;font-weight:600;color:#fff;margin-bottom:6px}
+.goal-bar{height:4px;background:rgba(255,255,255,.2);border-radius:100px;overflow:hidden;margin-bottom:4px}
+.goal-fill{height:100%;border-radius:100px;background:var(--pink)}
+.goal-pct{font-size:.7rem;color:rgba(255,255,255,.7)}
 
-        .avatar {
-            width: 36px; height: 36px;
-            border-radius: 50%;
-            border: 2px solid var(--m3-primary);
-            cursor: pointer;
-            transition: transform var(--dur-mid) var(--ease-std), box-shadow var(--dur-mid);
-        }
-        .avatar:hover { transform: scale(1.08); box-shadow: 0 0 0 4px rgba(208,188,255,0.2); }
+/* Bottom nav mobile */
+.bottom-nav{
+  display:none;position:fixed;bottom:0;left:0;right:0;height:76px;
+  background:rgba(255,255,255,.92);backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);justify-content:space-around;align-items:center;
+  z-index:900;padding:0 8px;
+}
+.bnav-btn{
+  flex:1;height:64px;border:none;background:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:3px;font:.65rem 500 var(--font);color:var(--gray);cursor:pointer;border-radius:12px;
+  transition:color .2s;
+}
+.bnav-btn.active,.bnav-btn:hover{color:var(--pink)}
+.bnav-btn .material-symbols-rounded{font-size:22px}
 
-        /* =============================================
-           VIEWS SYSTEM
-        ============================================= */
-        .view { display: none; opacity: 0; transition: opacity var(--dur-long) var(--ease-dec); }
-        .view.active { display: block; opacity: 1; }
-        .hidden { display: none !important; }
+/* Snackbar */
+.snackbar{
+  visibility:hidden;position:fixed;bottom:28px;left:50%;
+  transform:translateX(-50%) translateY(120%);z-index:2000;
+  min-width:260px;background:var(--black);color:#fff;
+  font:.9rem 500 var(--font);padding:12px 20px;border-radius:12px;
+  box-shadow:0 6px 24px rgba(0,0,0,.3);display:flex;align-items:center;gap:8px;
+  transition:transform .35s var(--ease-out);
+}
+.snackbar.show{visibility:visible;transform:translateX(-50%) translateY(0);animation:snkHide .4s var(--ease) 3s forwards}
+.snackbar .material-symbols-rounded{font-size:18px;color:var(--pink)}
+@keyframes snkHide{to{transform:translateX(-50%) translateY(120%);visibility:hidden}}
 
-        /* =============================================
-           LANDING PAGE
-        ============================================= */
-        #landing-view {
-            min-height: calc(100vh - 64px);
-            display: flex !important;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 24px 80px;
-        }
-        #landing-view.active { display: flex !important; }
+/* Ripple */
+.rpl{position:relative;overflow:hidden}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.25);transform:scale(0);animation:rplAnim .6s linear forwards;pointer-events:none}
+@keyframes rplAnim{to{transform:scale(4);opacity:0}}
 
-        .hero {
-            text-align: center;
-            max-width: 680px;
-            width: 100%;
-        }
-
-        .hero-eyebrow {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 100px;
-            background: rgba(208,188,255,0.1);
-            border: 1px solid rgba(208,188,255,0.2);
-            font-size: 0.78rem;
-            font-weight: 500;
-            color: var(--m3-primary);
-            margin-bottom: 24px;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-        }
-        .hero-eyebrow .material-symbols-rounded { font-size: 14px; }
-
-        .hero h1 {
-            font-family: var(--font-display);
-            font-size: clamp(3rem, 10vw, 5.5rem);
-            font-weight: 800;
-            line-height: 1;
-            letter-spacing: -0.03em;
-            color: var(--m3-on-surface);
-            margin-bottom: 20px;
-        }
-
-        .accent {
-            background: linear-gradient(135deg, #D0BCFF 0%, #A78BFA 50%, #EFB8C8 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-sub {
-            font-size: 1.15rem;
-            line-height: 1.65;
-            color: var(--m3-on-surf-v);
-            margin-bottom: 40px;
-        }
-
-        .gsi-wrapper {
-            display: flex;
-            justify-content: center;
-            margin-bottom: 40px;
-        }
-
-        .benefits-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin-top: 48px;
-        }
-
-        .benefit-card {
-            padding: 28px 24px;
-            border-radius: 24px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(var(--glass-blur));
-            text-align: left;
-            transition: transform var(--dur-mid) var(--ease-emph), border-color var(--dur-mid);
-        }
-        .benefit-card:hover { transform: translateY(-4px); border-color: rgba(208,188,255,0.25); }
-        .benefit-card .material-symbols-rounded {
-            font-size: 36px;
-            color: var(--m3-primary);
-            display: block;
-            margin-bottom: 16px;
-        }
-        .benefit-card h3 { font-family: var(--font-display); font-size: 1.05rem; margin-bottom: 8px; font-weight: 600; }
-        .benefit-card p { font-size: 0.9rem; color: var(--m3-on-surf-v); line-height: 1.5; }
-
-        .device-hint {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            justify-content: center;
-            margin-top: 32px;
-            padding: 12px 20px;
-            border-radius: 100px;
-            background: rgba(208,188,255,0.07);
-            border: 1px solid var(--glass-border);
-            font-size: 0.9rem;
-            color: var(--m3-on-surf-v);
-        }
-
-        /* =============================================
-           BUTTONS — Material 3
-        ============================================= */
-        .m3-btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            padding: 14px 28px;
-            border: none;
-            border-radius: 100px;
-            font-family: var(--font-display);
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform var(--dur-mid) var(--ease-std), box-shadow var(--dur-mid);
-            position: relative;
-            overflow: hidden;
-            letter-spacing: 0.02em;
-        }
-
-        .filled {
-            background: linear-gradient(135deg, #7C67D4, #6750A4);
-            color: #fff;
-            box-shadow: 0 4px 24px rgba(103,80,164,0.4);
-        }
-        .filled:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(103,80,164,0.55); }
-        .filled:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-        .elevated {
-            background: var(--m3-surface-c-mid);
-            color: var(--m3-primary);
-            border: 1px solid var(--glass-border);
-        }
-        .elevated:hover { background: var(--m3-surface-c-hi); }
-
-        .full-width { width: 100%; }
-
-        /* =============================================
-           DASHBOARD LAYOUT
-        ============================================= */
-        #dashboard-view { display: none; }
-        #dashboard-view.active { display: block; }
-
-        .dashboard-layout {
-            display: flex;
-            gap: 0;
-            min-height: calc(100vh - 64px);
-        }
-
-        /* ---- NAV RAIL (Desktop) ---- */
-        .nav-rail {
-            width: 88px;
-            background: var(--glass-bg);
-            border-right: 1px solid var(--glass-border);
-            backdrop-filter: blur(var(--glass-blur));
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 32px 0;
-            gap: 8px;
-            position: sticky;
-            top: 64px;
-            height: calc(100vh - 64px);
-            flex-shrink: 0;
-        }
-
-        .nav-item {
-            width: 64px;
-            height: 64px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 4px;
-            background: none;
-            border: none;
-            border-radius: 20px;
-            cursor: pointer;
-            color: var(--m3-on-surf-v);
-            font-family: var(--font-body);
-            font-size: 0.7rem;
-            font-weight: 500;
-            transition: background var(--dur-mid) var(--ease-std), color var(--dur-mid);
-            position: relative;
-            overflow: hidden;
-        }
-        .nav-item:hover { background: rgba(208,188,255,0.08); }
-        .nav-item.active { background: var(--m3-primary-c); color: var(--m3-on-primary-c); }
-        .nav-item .material-symbols-rounded { font-size: 26px; }
-
-        /* Bottom Nav (Mobile) */
-        .bottom-nav {
-            display: none;
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 80px;
-            justify-content: space-around;
-            align-items: center;
-            background: rgba(20, 18, 24, 0.92);
-            backdrop-filter: blur(20px);
-            border-top: 1px solid var(--glass-border);
-            z-index: 800;
-            padding: 0 8px;
-        }
-        .bottom-nav .nav-item { width: auto; flex: 1; height: 64px; font-size: 0.7rem; border-radius: 16px; }
-
-        /* =============================================
-           DASHBOARD CONTENT
-        ============================================= */
-        .dashboard-content {
-            flex: 1;
-            padding: 36px 32px;
-            overflow-y: auto;
-        }
-
-        .dash-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 36px;
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        .dash-header h2 {
-            font-family: var(--font-display);
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--m3-on-surface);
-        }
-
-        .chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            border-radius: 100px;
-            background: rgba(208,188,255,0.1);
-            border: 1px solid rgba(208,188,255,0.2);
-            font-size: 0.83rem;
-            font-weight: 500;
-            color: var(--m3-primary);
-        }
-        .chip::before {
-            content: '';
-            width: 8px; height: 8px;
-            border-radius: 50%;
-            background: #4CAF50;
-            box-shadow: 0 0 6px #4CAF50;
-        }
-
-        /* ---- MAIN GRID ---- */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1.4fr 1fr;
-            grid-template-rows: auto auto;
-            gap: 24px;
-        }
-
-        /* =============================================
-           CARDS — Glassmorphism
-        ============================================= */
-        .m3-card {
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 32px;
-            backdrop-filter: blur(var(--glass-blur));
-            -webkit-backdrop-filter: blur(var(--glass-blur));
-            padding: 28px;
-            transition: border-color var(--dur-mid);
-        }
-        .m3-card:hover { border-color: rgba(208,188,255,0.22); }
-        .m3-card h3 {
-            font-family: var(--font-display);
-            font-size: 1.05rem;
-            font-weight: 600;
-            color: var(--m3-on-surf-v);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .m3-card h3 .material-symbols-rounded { font-size: 20px; color: var(--m3-primary); }
-
-        /* Chart Card */
-        .chart-card {
-            grid-column: 1;
-            background:
-                linear-gradient(135deg, rgba(103,80,164,0.12) 0%, rgba(29,27,32,0.88) 50%),
-                var(--glass-bg);
-            position: relative;
-            overflow: hidden;
-        }
-        .chart-card::before {
-            content: '';
-            position: absolute;
-            top: -40%;
-            left: -20%;
-            width: 80%;
-            height: 80%;
-            background: radial-gradient(ellipse, rgba(103,80,164,0.15) 0%, transparent 70%);
-            pointer-events: none;
-        }
-        .chart-wrapper { height: 280px; position: relative; z-index: 1; }
-
-        /* Form Card */
-        .form-card { grid-column: 2; grid-row: 1 / 3; }
-
-        /* Goals Card */
-        .goals-card { grid-column: 1; }
-
-        /* =============================================
-           FORM INPUTS — Material 3 Filled Style
-        ============================================= */
-        .input-field {
-            position: relative;
-            margin-bottom: 20px;
-        }
-        .input-field input,
-        .input-field select {
-            width: 100%;
-            padding: 20px 16px 8px;
-            background: var(--m3-surface-c-mid);
-            border: none;
-            border-bottom: 2px solid var(--m3-outline);
-            border-radius: 12px 12px 0 0;
-            font-family: var(--font-body);
-            font-size: 1rem;
-            color: var(--m3-on-surface);
-            outline: none;
-            transition: border-color var(--dur-mid);
-            box-sizing: border-box;
-        }
-        .input-field input:focus,
-        .input-field select:focus {
-            border-bottom-color: var(--m3-primary);
-        }
-        .input-field select { appearance: none; }
-        .input-field label {
-            position: absolute;
-            left: 16px;
-            top: 14px;
-            font-size: 0.82rem;
-            font-weight: 500;
-            color: var(--m3-outline-v);
-            pointer-events: none;
-            transition: all var(--dur-mid) var(--ease-std);
-        }
-        .input-field input:focus + label,
-        .input-field input:not(:placeholder-shown) + label {
-            top: 5px;
-            font-size: 0.73rem;
-            color: var(--m3-primary);
-        }
-
-        /* =============================================
-           GOALS FEED — Instagram Premium Style
-        ============================================= */
-        .goals-feed {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 16px;
-        }
-
-        .goal-item {
-            border-radius: 24px;
-            overflow: hidden;
-            background: var(--m3-surface-c-lo);
-            border: 1px solid var(--glass-border);
-            position: relative;
-            aspect-ratio: 3 / 4;
-            cursor: pointer;
-            transition: transform var(--dur-mid) var(--ease-emph);
-        }
-        .goal-item:hover { transform: scale(1.03); }
-
-        .goal-img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .goal-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 20px 16px 16px;
-            background: linear-gradient(transparent, rgba(0,0,0,0.85));
-        }
-        .goal-overlay h4 { font-family: var(--font-display); font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 8px; }
-        .goal-progress-bar {
-            height: 5px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 100px;
-            overflow: hidden;
-            margin-bottom: 6px;
-        }
-        .goal-fill {
-            height: 100%;
-            border-radius: 100px;
-            background: linear-gradient(90deg, #D0BCFF, #A78BFA);
-            transition: width 1.2s var(--ease-dec);
-        }
-        .goal-pct { font-size: 0.78rem; color: rgba(255,255,255,0.75); }
-
-        /* =============================================
-           SNACKBAR — Material 3
-        ============================================= */
-        .snackbar {
-            visibility: hidden;
-            position: fixed;
-            bottom: 32px;
-            left: 50%;
-            transform: translateX(-50%) translateY(120%);
-            z-index: 1200;
-            min-width: 280px;
-            background: #E6E1E5;
-            color: #141218;
-            font-family: var(--font-body);
-            font-size: 0.9rem;
-            font-weight: 500;
-            padding: 14px 24px;
-            border-radius: 12px;
-            box-shadow: 0 6px 24px rgba(0,0,0,0.4);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            transition: transform var(--dur-mid) var(--ease-dec), visibility 0s var(--dur-mid);
-        }
-        .snackbar.show {
-            visibility: visible;
-            transform: translateX(-50%) translateY(0);
-            transition: transform var(--dur-mid) var(--ease-dec);
-            animation: snackHide 0.4s var(--ease-std) 3s forwards;
-        }
-        .snackbar .material-symbols-rounded { font-size: 20px; color: #4CAF50; }
-        @keyframes snackHide { to { transform: translateX(-50%) translateY(120%); visibility: hidden; } }
-
-        /* =============================================
-           RESPONSIVE
-        ============================================= */
-        @media (max-width: 900px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-                grid-template-rows: auto;
-            }
-            .chart-card { grid-column: 1; }
-            .form-card { grid-column: 1; grid-row: auto; }
-            .goals-card { grid-column: 1; }
-        }
-
-        @media (max-width: 768px) {
-            .nav-rail { display: none; }
-            .bottom-nav { display: flex; }
-            .dashboard-content { padding: 24px 16px 100px; }
-            .dash-header h2 { font-size: 1.5rem; }
-
-            #landing-view { padding: 24px 20px 100px; }
-            .hero h1 { font-size: clamp(2.5rem, 11vw, 4rem); }
-        }
-
-        @media (min-width: 769px) {
-            .bottom-nav { display: none !important; }
-            .nav-rail { display: flex; }
-        }
-    </style>
+/* Responsive */
+@media(max-width:768px){
+  .analytics-section{grid-template-columns:1fr;padding:60px 24px}
+  .gallery-header{padding:0 24px}
+  .gallery-track{padding:8px 24px 32px}
+  .gallery-nav{padding:0 24px}
+  .nav-rail{display:none}
+  .bottom-nav{display:flex}
+  .dash-content{padding:20px 16px 96px}
+  .cards-grid{grid-template-columns:1fr}
+  .form-card{grid-column:1;grid-row:auto}
+}
+@media(min-width:769px){.bottom-nav{display:none!important}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
 </head>
-
 <body>
-    <!-- ==================== HEADER ==================== -->
-    <header class="bottle-header">
-        <a href="https://bottle-code-rodricg30-shop.fourthwall.com/en-mxn"
-           target="_blank" class="branding-link">
-            <img src="https://imgur.com/4gOYmU0" alt="Bottle Code" class="brand-logo">
-            <span class="brand-text">Desarrollado por Bottle Code</span>
-        </a>
-        <div id="user-profile" class="hidden">
-            <img id="user-avatar" src="" alt="Avatar" class="avatar"
-                 title="Cerrar sesión" onclick="handleLogout()">
+
+<!-- NAVBAR (hidden until video done) -->
+<header class="site-header" id="site-header">
+  <a href="https://bottle-code-rodricg30-shop.fourthwall.com/en-mxn" target="_blank" class="nav-brand">
+    <img src="https://imgur.com/4gOYmU0" alt="Bottle Code" class="nav-logo">
+    <span class="nav-brand-text">Bottle Code</span>
+  </a>
+  <nav class="nav-right">
+    <button class="nav-cta rpl" onclick="document.getElementById('hero-gsi').scrollIntoView({behavior:'smooth'})">Comenzar</button>
+    <img id="user-avatar" src="" alt="" class="avatar" title="Cerrar sesión" onclick="handleLogout()">
+  </nav>
+</header>
+
+<main id="app-container">
+
+  <!-- ═══ LANDING VIEW ═══ -->
+  <div id="landing-view">
+
+    <!-- SCROLL VIDEO BANNER -->
+    <section class="scroll-hero" id="scroll-hero">
+      <div class="scroll-sticky">
+        <video id="scroll-video" src="https://i.imgur.com/voYSPap.mp4" muted playsinline preload="auto" webkit-playsinline></video>
+        <div class="video-overlay"></div>
+        <div class="scroll-progress-bar" id="scroll-progress-bar"></div>
+        <div class="scroll-hint" id="scroll-hint">
+          <span class="material-symbols-rounded">expand_more</span>
+          Scroll para explorar
         </div>
-    </header>
+      </div>
+    </section>
 
-    <main id="app-container">
+    <!-- HERO -->
+    <section class="hero-section" id="hero-gsi">
+      <div class="hero-eyebrow">
+        <span class="material-symbols-rounded">rocket_launch</span>
+        FounderDash 2.0 · Bottle Code Agency
+      </div>
+      <h1 class="hero-h1">Tu negocio,<br>controlado con <span class="pink">precisión.</span></h1>
+      <p class="hero-sub">La plataforma que combina la elegancia de Apple con la potencia de Google para founders que van en serio.</p>
 
-        <!-- ==================== LANDING ==================== -->
-        <section id="landing-view" class="view active">
-            <div class="hero">
-                <div class="hero-eyebrow">
-                    <span class="material-symbols-rounded">rocket_launch</span>
-                    Bottle Code Agency · FounderDash 2.0
-                </div>
+      <div class="hero-google-badge">
+        <div class="google-dots">
+          <div class="g-dot" style="background:#4285F4"></div>
+          <div class="g-dot" style="background:#EA4335"></div>
+          <div class="g-dot" style="background:#FBBC04"></div>
+          <div class="g-dot" style="background:#34A853"></div>
+        </div>
+        Integración completa con los servicios de Google
+      </div>
 
-                <h1>Founder<span class="accent">Dash</span></h1>
-                <p class="hero-sub">
-                    La infraestructura premium que convierte tus ventas en datos de poder.
-                    Conectado a Google Sheets. En tiempo real.
-                </p>
+      <div class="gsi-center">
+        <div id="g_id_onload"
+          data-client_id="387613368123-60jmf18v6m894q3srsevo2f6ssu4mo19.apps.googleusercontent.com"
+          data-callback="handleCredentialResponse"
+          data-auto_prompt="false">
+        </div>
+        <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-size="large" data-text="signin_with" data-locale="es"></div>
+      </div>
+      <p class="hero-legal">Al iniciar sesión aceptas que FounderDash acceda a tu Google Sheets.</p>
+    </section>
 
-                <!-- GSI Button — preserved exactly -->
-                <div class="gsi-wrapper">
-                    <div id="g_id_onload"
-                         data-client_id="387613368123-60jmf18v6m894q3srsevo2f6ssu4mo19.apps.googleusercontent.com"
-                         data-callback="handleCredentialResponse"
-                         data-auto_prompt="false">
-                    </div>
-                    <div class="g_id_signin"
-                         data-type="standard"
-                         data-shape="pill"
-                         data-theme="filled_blue"
-                         data-size="large"
-                         data-text="signin_with"
-                         data-locale="es">
-                    </div>
-                </div>
+    <!-- HORIZONTAL GALLERY (Apple style) -->
+    <section class="gallery-section">
+      <div class="gallery-header">
+        <h2>Todo lo que necesitas.</h2>
+        <p>Cada herramienta diseñada para darte ventaja desde el primer día.</p>
+      </div>
+      <div class="gallery-track-wrap">
+        <div class="gallery-track" id="gallery-track">
 
-                <button id="auth-btn" class="m3-btn filled shadow-glow hidden ripple-host">
-                    <span class="material-symbols-rounded">login</span>
-                    <span>Acceder con Google</span>
-                </button>
-
-                <div class="benefits-grid">
-                    <div class="benefit-card">
-                        <span class="material-symbols-rounded">cloud_sync</span>
-                        <h3>Google Sync</h3>
-                        <p>Cada venta va directo a tu Google Sheet privado sin intermediarios.</p>
-                    </div>
-                    <div class="benefit-card">
-                        <span class="material-symbols-rounded">query_stats</span>
-                        <h3>Análisis Pro</h3>
-                        <p>Gráficas en tiempo real con los últimos 10 movimientos.</p>
-                    </div>
-                    <div class="benefit-card">
-                        <span class="material-symbols-rounded">verified_user</span>
-                        <h3>Datos Tuyos</h3>
-                        <p>Autenticación OAuth2. Tus credenciales nunca pasan por nuestros servidores.</p>
-                    </div>
-                </div>
+          <div class="gallery-card">
+            <div class="card-image" style="background:linear-gradient(135deg,#fff0f4,#ffe4ec)">
+              <div class="card-icon-bg">📊</div>
             </div>
-
-            <div id="desktop-pro-section" class="device-hint hidden">
-                <span class="material-symbols-rounded">desktop_windows</span>
-                Dashboard Pro Activo · Modo Escritorio
+            <div class="card-body">
+              <div class="card-tag">Ventas</div>
+              <h3>Registra cada venta en segundos</h3>
+              <p>Formula simple: concepto, monto, categoría. Tu hoja de Google se actualiza en tiempo real, sin apps extras.</p>
             </div>
-            <div id="mobile-install-section" class="device-hint hidden">
-                <button id="install-btn" class="m3-btn elevated ripple-host">
-                    <span class="material-symbols-rounded">download</span>
-                    Instalar App
-                </button>
+          </div>
+
+          <div class="gallery-card">
+            <div class="card-image" style="background:linear-gradient(135deg,#f0f7ff,#e4eeff)">
+              <div class="card-icon-bg">🔗</div>
             </div>
-        </section>
-
-        <!-- ==================== DASHBOARD ==================== -->
-        <section id="dashboard-view" class="view">
-            <div class="dashboard-layout">
-
-                <!-- Nav Rail -->
-                <nav class="nav-rail">
-                    <button class="nav-item active ripple-host" data-tab="overview">
-                        <span class="material-symbols-rounded">grid_view</span>
-                        Inicio
-                    </button>
-                    <button class="nav-item ripple-host" data-tab="sales">
-                        <span class="material-symbols-rounded">receipt_long</span>
-                        Ventas
-                    </button>
-                    <button class="nav-item ripple-host" data-tab="goals">
-                        <span class="material-symbols-rounded">emoji_events</span>
-                        Metas
-                    </button>
-                    <div style="flex:1"></div>
-                    <button class="nav-item ripple-host" id="logout-btn">
-                        <span class="material-symbols-rounded">logout</span>
-                        Salir
-                    </button>
-                </nav>
-
-                <!-- Content -->
-                <div class="dashboard-content">
-                    <header class="dash-header">
-                        <h2 id="welcome-msg">Bienvenido, Fundador</h2>
-                        <div class="chip" id="sheet-status">
-                            Vinculado a la Nube
-                        </div>
-                    </header>
-
-                    <div class="main-grid">
-                        <!-- Chart -->
-                        <div class="m3-card chart-card">
-                            <h3>
-                                <span class="material-symbols-rounded">area_chart</span>
-                                Flujo de Ventas
-                            </h3>
-                            <div class="chart-wrapper">
-                                <canvas id="salesChart"></canvas>
-                            </div>
-                        </div>
-
-                        <!-- Form -->
-                        <div class="m3-card form-card">
-                            <h3>
-                                <span class="material-symbols-rounded">add_circle</span>
-                                Nueva Venta
-                            </h3>
-                            <form id="sale-form">
-                                <div class="input-field">
-                                    <input type="text" id="concepto" required placeholder=" ">
-                                    <label>Concepto</label>
-                                </div>
-                                <div class="input-field">
-                                    <input type="number" id="monto" required placeholder=" " step="0.01">
-                                    <label>Monto ($)</label>
-                                </div>
-                                <div class="input-field">
-                                    <select id="categoria">
-                                        <option value="Servicio">Servicio</option>
-                                        <option value="Producto">Producto</option>
-                                        <option value="Suscripción">Suscripción</option>
-                                        <option value="Agencia">Agencia</option>
-                                        <option value="Consultoría">Consultoría</option>
-                                    </select>
-                                    <label>Categoría</label>
-                                </div>
-                                <div class="input-field">
-                                    <input type="text" id="negocio-id" placeholder=" " value="BC-AGENCY">
-                                    <label>Negocio ID</label>
-                                </div>
-                                <button type="submit" class="m3-btn filled full-width ripple-host" id="submit-sale">
-                                    <span id="btn-label">Enviar a Google Sheets</span>
-                                    <span class="material-symbols-rounded" id="btn-icon">send</span>
-                                </button>
-                            </form>
-                        </div>
-
-                        <!-- Goals Feed -->
-                        <div class="m3-card goals-card">
-                            <h3>
-                                <span class="material-symbols-rounded">emoji_events</span>
-                                Metas
-                            </h3>
-                            <div class="goals-feed" id="goals-feed"></div>
-                        </div>
-                    </div>
-                </div>
+            <div class="card-body">
+              <div class="card-tag">Google Sheets</div>
+              <h3>Tu base de datos, tu control total</h3>
+              <p>Los datos son tuyos. Conectado mediante OAuth2 a tu propio Google Sheet privado. Sin intermediarios.</p>
             </div>
+          </div>
 
-            <!-- Bottom Nav (Mobile) -->
-            <nav class="bottom-nav">
-                <button class="nav-item active ripple-host" data-tab="overview">
-                    <span class="material-symbols-rounded">grid_view</span>
-                    Inicio
-                </button>
-                <button class="nav-item ripple-host" data-tab="sales">
-                    <span class="material-symbols-rounded">receipt_long</span>
-                    Ventas
-                </button>
-                <button class="nav-item ripple-host" data-tab="goals">
-                    <span class="material-symbols-rounded">emoji_events</span>
-                    Metas
-                </button>
-                <button class="nav-item ripple-host" id="mobile-logout-btn">
-                    <span class="material-symbols-rounded">logout</span>
-                    Salir
-                </button>
-            </nav>
-        </section>
+          <div class="gallery-card">
+            <div class="card-image" style="background:linear-gradient(135deg,#f0fff4,#e4ffe8)">
+              <div class="card-icon-bg">📈</div>
+            </div>
+            <div class="card-body">
+              <div class="card-tag">Analytics</div>
+              <h3>Google Analytics integrado</h3>
+              <p>Con cualquier plan de sitio web + FounderDash: ve desde dónde, cómo y cuándo te visitan tus clientes.</p>
+            </div>
+          </div>
 
-    </main>
+          <div class="gallery-card">
+            <div class="card-image" style="background:linear-gradient(135deg,#fff8f0,#ffedd4)">
+              <div class="card-icon-bg">🎯</div>
+            </div>
+            <div class="card-body">
+              <div class="card-tag">Metas</div>
+              <h3>Visualiza hacia dónde vas</h3>
+              <p>Define metas financieras con imágenes. Ve tu progreso en tiempo real mientras registras ventas.</p>
+            </div>
+          </div>
 
-    <!-- Snackbar -->
-    <div id="snackbar" class="snackbar">
-        <span class="material-symbols-rounded">cloud_done</span>
-        <span id="snackbar-msg">Venta registrada en la nube</span>
+          <div class="gallery-card">
+            <div class="card-image" style="background:linear-gradient(135deg,#f5f0ff,#ede4ff)">
+              <div class="card-icon-bg">📱</div>
+            </div>
+            <div class="card-body">
+              <div class="card-tag">PWA</div>
+              <h3>Instálala como app nativa</h3>
+              <p>Funciona en iOS y Android sin App Store. Pantalla completa, offline ready, experiencia premium.</p>
+            </div>
+          </div>
+
+          <div class="gallery-card">
+            <div class="card-image" style="background:linear-gradient(135deg,#f0fffe,#d4fef8)">
+              <div class="card-icon-bg">🔐</div>
+            </div>
+            <div class="card-body">
+              <div class="card-tag">Seguridad</div>
+              <h3>Autenticación de nivel Google</h3>
+              <p>OAuth2 con Identity Services. Tus credenciales nunca pasan por nuestros servidores. Punto.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="gallery-nav">
+        <button class="gnav-btn rpl" id="g-prev"><span class="material-symbols-rounded">chevron_left</span></button>
+        <button class="gnav-btn rpl" id="g-next"><span class="material-symbols-rounded">chevron_right</span></button>
+      </div>
+    </section>
+
+    <!-- GOOGLE ANALYTICS PROMO -->
+    <section class="analytics-section">
+      <div>
+        <div class="analytics-eyebrow">
+          <span class="material-symbols-rounded">monitoring</span>
+          Incluido en tu bundle
+        </div>
+        <h2>Google Analytics<br>en <span>tu negocio.</span></h2>
+        <p>Al adquirir cualquier plan de sitio web de Bottle Code + FounderDash, desbloqueamos Google Analytics 4 en tu dominio. Sin configuración técnica de tu parte.</p>
+        <ul class="analytics-perks">
+          <li><span class="material-symbols-rounded">location_on</span> Mapa de calor: desde qué ciudades te visitan</li>
+          <li><span class="material-symbols-rounded">schedule</span> Horarios de mayor tráfico en gráficas claras</li>
+          <li><span class="material-symbols-rounded">devices</span> Qué dispositivos usan tus clientes (móvil vs PC)</li>
+          <li><span class="material-symbols-rounded">timeline</span> Embudos de conversión y tasa de rebote</li>
+          <li><span class="material-symbols-rounded">campaign</span> Origen del tráfico: orgánico, redes sociales, directo</li>
+        </ul>
+        <button class="analytics-cta rpl" onclick="window.open('https://bottle-code-rodricg30-shop.fourthwall.com/en-mxn','_blank')">
+          <span class="material-symbols-rounded">open_in_new</span>
+          Ver planes web
+        </button>
+      </div>
+      <div class="analytics-chart-wrap">
+        <h4>Usuarios en los últimos 30 días</h4>
+        <div class="mini-chart-wrap"><canvas id="analyticsChart"></canvas></div>
+        <div class="analytics-stats">
+          <div class="a-stat"><div class="num">4,821</div><div class="lbl">Visitas únicas</div></div>
+          <div class="a-stat"><div class="num">68%</div><div class="lbl">Desde móvil</div></div>
+          <div class="a-stat"><div class="num">2:34</div><div class="lbl">Tiempo promedio</div></div>
+          <div class="a-stat"><div class="num">MX, US, CA</div><div class="lbl">Top países</div></div>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /landing-view -->
+
+  <!-- ═══ DASHBOARD VIEW ═══ -->
+  <section id="dashboard-view" class="view">
+    <div class="dash-layout">
+
+      <nav class="nav-rail">
+        <button class="rail-btn active rpl" data-tab="overview"><span class="material-symbols-rounded">grid_view</span>Inicio</button>
+        <button class="rail-btn rpl" data-tab="sales"><span class="material-symbols-rounded">receipt_long</span>Ventas</button>
+        <button class="rail-btn rpl" data-tab="goals"><span class="material-symbols-rounded">emoji_events</span>Metas</button>
+        <div style="flex:1"></div>
+        <button class="rail-btn rpl" id="logout-btn"><span class="material-symbols-rounded">logout</span>Salir</button>
+      </nav>
+
+      <div class="dash-content">
+        <div class="dash-header">
+          <h2 id="welcome-msg">Bienvenido, Fundador</h2>
+          <div class="status-chip">Vinculado a la Nube</div>
+        </div>
+
+        <div class="cards-grid">
+          <div class="d-card">
+            <h3><span class="material-symbols-rounded">area_chart</span>Flujo de Ventas</h3>
+            <div class="chart-area"><canvas id="salesChart"></canvas></div>
+          </div>
+
+          <div class="d-card form-card">
+            <h3><span class="material-symbols-rounded">add_circle</span>Nueva Venta</h3>
+            <form id="sale-form">
+              <div class="field"><input type="text" id="concepto" required placeholder=" "><label>Concepto</label></div>
+              <div class="field"><input type="number" id="monto" required placeholder=" " step="0.01"><label>Monto ($)</label></div>
+              <div class="field">
+                <select id="categoria"><option>Servicio</option><option>Producto</option><option>Suscripción</option><option>Agencia</option><option>Consultoría</option></select>
+                <label>Categoría</label>
+              </div>
+              <div class="field"><input type="text" id="negocio-id" placeholder=" " value="BC-AGENCY"><label>Negocio ID</label></div>
+              <button type="submit" class="submit-btn rpl" id="submit-sale">
+                <span id="btn-label">Enviar a Google Sheets</span>
+                <span class="material-symbols-rounded" id="btn-icon">send</span>
+              </button>
+            </form>
+          </div>
+
+          <div class="d-card">
+            <h3><span class="material-symbols-rounded">emoji_events</span>Metas</h3>
+            <div class="goals-grid" id="goals-feed"></div>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <nav class="bottom-nav">
+      <button class="bnav-btn active rpl" data-tab="overview"><span class="material-symbols-rounded">grid_view</span>Inicio</button>
+      <button class="bnav-btn rpl" data-tab="sales"><span class="material-symbols-rounded">receipt_long</span>Ventas</button>
+      <button class="bnav-btn rpl" data-tab="goals"><span class="material-symbols-rounded">emoji_events</span>Metas</button>
+      <button class="bnav-btn rpl" id="mobile-logout-btn"><span class="material-symbols-rounded">logout</span>Salir</button>
+    </nav>
+  </section>
 
-    <script>
-    /* =============================================
-       FOUNDERDASH CORE — Preserved Logic + Enhanced UX
-    ============================================= */
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0R25x7dwtNM53xaLIRxaKJlys9uoU6Amllma2u1-e3b8vNsYGs1iAaBItywVpiHch_Q/exec';
-    let chartInstance = null;
-    let deferredPrompt = null;
+</main>
 
-    // ---- Ripple Effect ----
-    document.addEventListener('click', e => {
-        const btn = e.target.closest('.ripple-host');
-        if (!btn) return;
-        const r = document.createElement('span');
-        r.classList.add('ripple');
-        const rect = btn.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height);
-        r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
-        btn.appendChild(r);
-        r.addEventListener('animationend', () => r.remove());
-    });
+<div id="snackbar" class="snackbar">
+  <span class="material-symbols-rounded">cloud_done</span>
+  <span id="snackbar-msg">Venta registrada</span>
+</div>
 
-    // ---- View Transition ----
-    function showDashboard(name, picture) {
-        const landing = document.getElementById('landing-view');
-        const dash    = document.getElementById('dashboard-view');
-        landing.style.opacity = '0';
-        setTimeout(() => {
-            landing.classList.remove('active');
-            landing.style.display = 'none';
-            dash.style.display = 'block';
-            requestAnimationFrame(() => {
-                dash.classList.add('active');
-                dash.style.opacity = '1';
-            });
-        }, 400);
+<script>
+const WEBHOOK = 'https://script.google.com/macros/s/AKfycby0R25x7dwtNM53xaLIRxaKJlys9uoU6Amllma2u1-e3b8vNsYGs1iAaBItywVpiHch_Q/exec';
+let chartInst = null, deferredPrompt = null;
 
-        if (name)    document.getElementById('welcome-msg').textContent = `Bienvenido, ${name}`;
-        if (picture) {
-            const av = document.getElementById('user-avatar');
-            av.src = picture;
-            document.getElementById('user-profile').classList.remove('hidden');
-        }
-        initChart();
-        renderGoals();
+/* ── Ripple ── */
+document.addEventListener('click', e => {
+  const b = e.target.closest('.rpl');
+  if (!b) return;
+  const r = document.createElement('span');
+  r.classList.add('ripple');
+  const rect = b.getBoundingClientRect(), s = Math.max(rect.width, rect.height);
+  r.style.cssText = `width:${s}px;height:${s}px;left:${e.clientX-rect.left-s/2}px;top:${e.clientY-rect.top-s/2}px`;
+  b.appendChild(r);
+  r.addEventListener('animationend', () => r.remove());
+});
+
+/* ── Auth ── */
+window.handleCredentialResponse = resp => {
+  const p = parseJwt(resp.credential);
+  const av = document.getElementById('user-avatar');
+  av.src = p.picture; av.style.display = 'block';
+  google.accounts.oauth2.initTokenClient({
+    client_id: '387613368123-60jmf18v6m894q3srsevo2f6ssu4mo19.apps.googleusercontent.com',
+    scope: 'https://www.googleapis.com/auth/spreadsheets',
+    callback: r => { if (r.access_token) sessionStorage.setItem('fd_tk', r.access_token); }
+  }).requestAccessToken();
+  document.getElementById('welcome-msg').textContent = `Hola, ${p.given_name}`;
+  document.getElementById('landing-view').style.display = 'none';
+  const dv = document.getElementById('dashboard-view');
+  dv.style.display = 'block';
+  setTimeout(() => { dv.classList.add('active'); initChart(); renderGoals(); }, 50);
+  showSnackbar('Conectado · Bienvenido 🎉');
+};
+
+function handleLogout() {
+  if (!confirm('¿Cerrar sesión?')) return;
+  sessionStorage.clear();
+  google?.accounts?.id?.disableAutoSelect?.();
+  location.reload();
+}
+
+/* ── Form ── */
+document.getElementById('sale-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('submit-sale');
+  const lbl = document.getElementById('btn-label');
+  const ico = document.getElementById('btn-icon');
+  btn.disabled = true;
+  lbl.textContent = 'Cargando...';
+  ico.textContent = 'sync';
+  ico.style.animation = 'spin 1s linear infinite';
+  const payload = {
+    concepto: document.getElementById('concepto').value,
+    monto: +document.getElementById('monto').value,
+    categoria: document.getElementById('categoria').value,
+    negocioId: document.getElementById('negocio-id').value,
+    timestamp: new Date().toLocaleString('es-MX')
+  };
+  try {
+    await fetch(WEBHOOK, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    showSnackbar('Venta registrada en la nube');
+    pushChart(payload);
+    e.target.reset();
+  } catch { showSnackbar('Error de conexión'); }
+  finally {
+    btn.disabled = false; lbl.textContent = 'Enviar a Google Sheets';
+    ico.textContent = 'send'; ico.style.animation = '';
+  }
+});
+
+/* ── Charts ── */
+function initChart() {
+  const ctx = document.getElementById('salesChart');
+  if (chartInst) chartInst.destroy();
+  chartInst = new Chart(ctx, {
+    type:'line',
+    data:{
+      labels:['Ene','Feb','Mar','Abr','May','Jun'],
+      datasets:[{ label:'Ventas', data:[3200,5100,4200,7800,6500,9200],
+        borderColor:'#FF375F', backgroundColor:'rgba(255,55,95,0.08)',
+        fill:true, tension:.45, borderWidth:2.5,
+        pointRadius:5, pointBackgroundColor:'#FF375F',
+        pointBorderColor:'#fff', pointBorderWidth:2 }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false},
+        tooltip:{ backgroundColor:'#1D1D1F', borderColor:'rgba(255,255,255,.1)', borderWidth:1,
+          titleColor:'#fff', bodyColor:'rgba(255,255,255,.7)', cornerRadius:10, padding:10,
+          callbacks:{ label: c => ` $${c.parsed.y.toLocaleString('es-MX')}` } }},
+      scales:{
+        y:{ grid:{color:'rgba(0,0,0,.04)'}, ticks:{color:'#6E6E73',font:{family:'Inter',size:11}}, border:{display:false} },
+        x:{ grid:{display:false}, ticks:{color:'#6E6E73',font:{family:'Inter',size:11}}, border:{display:false} }
+      }
     }
+  });
+}
 
-    // ---- Google Auth (preserved callback) ----
-    window.handleCredentialResponse = (response) => {
-        const payload = parseJwt(response.credential);
-
-        const client = google.accounts.oauth2.initTokenClient({
-            client_id: '387613368123-60jmf18v6m894q3srsevo2f6ssu4mo19.apps.googleusercontent.com',
-            scope: 'https://www.googleapis.com/auth/spreadsheets',
-            callback: (tokenResp) => {
-                if (tokenResp.access_token) {
-                    sessionStorage.setItem('fd_token', tokenResp.access_token);
-                    showSnackbar('Sheets conectado — bienvenido 🎉');
-                }
-            },
-        });
-        client.requestAccessToken();
-        showDashboard(payload.given_name, payload.picture);
-    };
-
-    function handleLogout() {
-        if (confirm('¿Cerrar sesión?')) {
-            sessionStorage.clear();
-            location.reload();
-        }
+function initAnalyticsChart() {
+  const ctx = document.getElementById('analyticsChart');
+  if (!ctx) return;
+  new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:['S1','S2','S3','S4','S5','S6','S7','S8'],
+      datasets:[{ data:[320,480,390,620,540,780,690,840],
+        backgroundColor:'rgba(255,55,95,0.7)', borderRadius:6, borderSkipped:false }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false}, tooltip:{ backgroundColor:'rgba(255,255,255,.1)', titleColor:'#fff', bodyColor:'rgba(255,255,255,.7)', cornerRadius:8 }},
+      scales:{
+        y:{ grid:{color:'rgba(255,255,255,.05)'}, ticks:{color:'rgba(255,255,255,.4)',font:{size:10}}, border:{display:false} },
+        x:{ grid:{display:false}, ticks:{color:'rgba(255,255,255,.4)',font:{size:10}}, border:{display:false} }
+      }
     }
+  });
+}
 
-    // ---- Form Submit + Sheets POST ----
-    document.getElementById('sale-form').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const btn     = document.getElementById('submit-sale');
-        const label   = document.getElementById('btn-label');
-        const icon    = document.getElementById('btn-icon');
+function pushChart(d) {
+  if (!chartInst) return;
+  chartInst.data.labels.push(new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}));
+  chartInst.data.datasets[0].data.push(d.monto);
+  if (chartInst.data.labels.length > 10) { chartInst.data.labels.shift(); chartInst.data.datasets[0].data.shift(); }
+  chartInst.update();
+}
 
-        btn.disabled  = true;
-        label.textContent = 'Cargando...';
-        icon.textContent  = 'sync';
-        icon.style.animation = 'spin 1s linear infinite';
+/* ── Goals ── */
+function renderGoals() {
+  const goals = [
+    { title:'MacBook Pro M4', target:60000, current:41000, img:'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300&q=80' },
+    { title:'Tokio 2026',     target:130000,current:38000, img:'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=300&q=80' },
+    { title:'Oficina Propia', target:200000,current:94000, img:'https://images.unsplash.com/photo-1497366216548-37526070297c?w=300&q=80' },
+  ];
+  document.getElementById('goals-feed').innerHTML = goals.map(g => {
+    const pct = Math.min(100, Math.round(g.current/g.target*100));
+    return `<div class="goal-card"><img class="goal-img" src="${g.img}" loading="lazy">
+    <div class="goal-layer"><h4>${g.title}</h4>
+    <div class="goal-bar"><div class="goal-fill" style="width:${pct}%"></div></div>
+    <span class="goal-pct">$${g.current.toLocaleString('es-MX')} · ${pct}%</span></div></div>`;
+  }).join('');
+}
 
-        const payload = {
-            concepto:  document.getElementById('concepto').value,
-            monto:     parseFloat(document.getElementById('monto').value),
-            categoria: document.getElementById('categoria').value,
-            negocioId: document.getElementById('negocio-id').value,
-            timestamp: new Date().toLocaleString('es-MX'),
-        };
+/* ── Snackbar ── */
+function showSnackbar(msg) {
+  const sb = document.getElementById('snackbar');
+  document.getElementById('snackbar-msg').textContent = msg;
+  sb.classList.remove('show'); void sb.offsetWidth; sb.classList.add('show');
+}
 
-        try {
-            await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                mode:   'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body:   JSON.stringify(payload),
-            });
-            showSnackbar('Venta registrada en la nube');
-            pushToChart(payload);
-            e.target.reset();
-        } catch {
-            showSnackbar('Error de conexión');
-        } finally {
-            btn.disabled = false;
-            label.textContent = 'Enviar a Google Sheets';
-            icon.textContent  = 'send';
-            icon.style.animation = '';
-        }
-    });
+/* ── Nav Tabs ── */
+document.querySelectorAll('[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('[data-tab]').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll(`[data-tab="${btn.dataset.tab}"]`).forEach(b => b.classList.add('active'));
+  });
+});
+['logout-btn','mobile-logout-btn'].forEach(id => document.getElementById(id)?.addEventListener('click', handleLogout));
 
-    // ---- Chart.js ----
-    function initChart() {
-        const ctx = document.getElementById('salesChart');
-        if (chartInstance) chartInstance.destroy();
-        chartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Ene','Feb','Mar','Abr','May','Jun'],
-                datasets: [{
-                    label: 'Ventas ($)',
-                    data: [3200, 5100, 4200, 7800, 6500, 9200],
-                    borderColor: '#D0BCFF',
-                    backgroundColor: (ctx) => {
-                        const g = ctx.chart.ctx.createLinearGradient(0,0,0,300);
-                        g.addColorStop(0, 'rgba(208,188,255,0.35)');
-                        g.addColorStop(1, 'rgba(208,188,255,0)');
-                        return g;
-                    },
-                    fill: true,
-                    tension: 0.5,
-                    borderWidth: 3,
-                    pointRadius: 5,
-                    pointBackgroundColor: '#D0BCFF',
-                    pointBorderColor: '#0F0B1A',
-                    pointBorderWidth: 2,
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(29,27,32,0.9)',
-                        borderColor: 'rgba(208,188,255,0.2)',
-                        borderWidth: 1,
-                        titleColor: '#D0BCFF',
-                        bodyColor: '#E6E1E5',
-                        padding: 12,
-                        cornerRadius: 12,
-                        callbacks: {
-                            label: ctx => ` $${ctx.parsed.y.toLocaleString('es-MX')}`
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        grid:  { color: 'rgba(208,188,255,0.06)' },
-                        ticks: { color: '#79747E', font: { family: 'Roboto', size: 11 } },
-                        border: { display: false }
-                    },
-                    x: {
-                        grid:  { display: false },
-                        ticks: { color: '#79747E', font: { family: 'Roboto', size: 11 } },
-                        border: { display: false }
-                    }
-                }
-            }
-        });
-    }
+/* ── Gallery drag scroll ── */
+(function() {
+  const track = document.getElementById('gallery-track');
+  if (!track) return;
+  let isDown = false, startX, scrollLeft;
+  track.addEventListener('mousedown', e => { isDown=true; track.style.cursor='grabbing'; startX=e.pageX-track.offsetLeft; scrollLeft=track.scrollLeft; });
+  track.addEventListener('mouseleave', () => { isDown=false; track.style.cursor='grab'; });
+  track.addEventListener('mouseup', () => { isDown=false; track.style.cursor='grab'; });
+  track.addEventListener('mousemove', e => { if(!isDown) return; e.preventDefault(); const x=e.pageX-track.offsetLeft; track.scrollLeft=scrollLeft-(x-startX)*1.5; });
+  document.getElementById('g-next')?.addEventListener('click', () => track.scrollBy({left:440,behavior:'smooth'}));
+  document.getElementById('g-prev')?.addEventListener('click', () => track.scrollBy({left:-440,behavior:'smooth'}));
+})();
 
-    function pushToChart(data) {
-        if (!chartInstance) return;
-        const time = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-        chartInstance.data.labels.push(time);
-        chartInstance.data.datasets[0].data.push(data.monto);
-        if (chartInstance.data.labels.length > 10) {
-            chartInstance.data.labels.shift();
-            chartInstance.data.datasets[0].data.shift();
-        }
-        chartInstance.update();
-    }
+/* ── Scroll-Driven Video + Navbar reveal ── */
+(function() {
+  const video   = document.getElementById('scroll-video');
+  const hero    = document.getElementById('scroll-hero');
+  const bar     = document.getElementById('scroll-progress-bar');
+  const hint    = document.getElementById('scroll-hint');
+  const header  = document.getElementById('site-header');
+  const DURATION = 7;
+  let ticking = false, hintHidden = false, navShown = false;
 
-    // ---- Goals Feed ----
-    function renderGoals() {
-        const goals = [
-            { title: 'MacBook Pro M4',  target: 60000, current: 41000, img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&q=80' },
-            { title: 'Tokio 2026',      target: 130000, current: 38000, img: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&q=80' },
-            { title: 'Oficina Propia',  target: 200000, current: 94000, img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80' },
-        ];
-        const feed = document.getElementById('goals-feed');
-        feed.innerHTML = goals.map(g => {
-            const pct = Math.min(100, Math.round((g.current / g.target) * 100));
-            return `<div class="goal-item">
-                <img class="goal-img" src="${g.img}" alt="${g.title}" loading="lazy">
-                <div class="goal-overlay">
-                    <h4>${g.title}</h4>
-                    <div class="goal-progress-bar">
-                        <div class="goal-fill" style="width:${pct}%"></div>
-                    </div>
-                    <span class="goal-pct">$${g.current.toLocaleString('es-MX')} · ${pct}%</span>
-                </div>
-            </div>`;
-        }).join('');
-    }
+  video?.addEventListener('loadedmetadata', () => { video.currentTime = 0; });
 
-    // ---- Snackbar ----
-    function showSnackbar(msg) {
-        const sb = document.getElementById('snackbar');
-        document.getElementById('snackbar-msg').textContent = msg;
-        sb.classList.remove('show');
-        void sb.offsetWidth; // reflow
-        sb.classList.add('show');
-    }
+  function sync() {
+    const heroTop   = hero.getBoundingClientRect().top + window.scrollY;
+    const scrollable = hero.offsetHeight - window.innerHeight;
+    const scrolled  = Math.max(0, window.scrollY - heroTop);
+    const progress  = Math.min(1, scrolled / scrollable);
 
-    // ---- Nav Tabs ----
-    document.querySelectorAll('.nav-item[data-tab]').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            document.querySelectorAll(`.nav-item[data-tab="${btn.dataset.tab}"]`).forEach(b => b.classList.add('active'));
-        });
-    });
+    if (Math.abs(video.currentTime - progress * DURATION) > 0.02) video.currentTime = progress * DURATION;
+    bar.style.width = (progress * 100) + '%';
 
-    // ---- Logout ----
-    ['logout-btn','mobile-logout-btn'].forEach(id => {
-        document.getElementById(id)?.addEventListener('click', handleLogout);
-    });
+    if (progress > 0.02 && !hintHidden) { hint.style.opacity='0'; hint.style.transition='opacity .4s'; hintHidden=true; }
+    if (progress <= 0.02 && hintHidden) { hint.style.opacity='1'; hintHidden=false; }
 
-    // ---- Device Detection ----
-    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 800;
-    document.getElementById(isMobile ? 'mobile-install-section' : 'desktop-pro-section').classList.remove('hidden');
+    // Reveal navbar after video completes
+    if (progress >= 0.95 && !navShown) { header.classList.add('visible'); navShown=true; }
+    if (progress < 0.95 && navShown)   { header.classList.remove('visible'); navShown=false; }
 
-    // ---- PWA Install ----
-    window.addEventListener('beforeinstallprompt', e => {
-        e.preventDefault();
-        deferredPrompt = e;
-        document.getElementById('install-btn')?.classList.remove('hidden');
-    });
-    document.getElementById('install-btn')?.addEventListener('click', async () => {
-        if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; }
-    });
+    ticking = false;
+  }
 
-    // ---- Service Worker ----
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').catch(() => {});
-    }
+  ['scroll','touchmove'].forEach(ev => window.addEventListener(ev, () => {
+    if (!ticking) { requestAnimationFrame(sync); ticking=true; }
+  }, { passive:true }));
+  sync();
+})();
 
-    // ---- Helpers ----
-    function parseJwt(token) {
-        const b64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
-        return JSON.parse(decodeURIComponent(atob(b64).split('').map(c => '%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
-    }
-    </script>
+/* ── PWA ── */
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt=e; });
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(()=>{});
 
-    <style>
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+/* ── Analytics chart (calls after DOM ready) ── */
+window.addEventListener('load', initAnalyticsChart);
+
+/* ── JWT ── */
+function parseJwt(token) {
+  const b64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+  return JSON.parse(decodeURIComponent(atob(b64).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+}
+</script>
 </body>
 </html>
