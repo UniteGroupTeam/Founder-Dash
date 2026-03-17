@@ -1,0 +1,21 @@
+{
+  "name": "FounderDash",
+  "short_name": "FounderDash",
+  "description": "Tu centro de control para ventas y metas by Bottle Code",
+  "start_url": "../index.html",
+  "display": "fullscreen",
+  "background_color": "#FDF8FD",
+  "theme_color": "#6750A4",
+  "icons": [
+    {
+      "src": "https://imgur.com/4gOYmU0",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://imgur.com/4gOYmU0",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}
