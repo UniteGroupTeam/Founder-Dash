@@ -819,6 +819,38 @@ body{
 @media(min-width:769px){.bn{display:none!important}}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+  /* PWA Install CTA */
+  .pwa-cta-btn {
+    margin-top: 18px;
+    background: rgba(255,55,95,0.1);
+    border: 1px solid rgba(255,55,95,0.3);
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 100px;
+    font: 600 0.85rem var(--font);
+    display: none; /* Hidden until beforeinstallprompt */
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s var(--ease);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 24px rgba(255,55,95,0.15);
+  }
+  .pwa-cta-btn:hover {
+    background: var(--pink);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(255,55,95,0.4);
+    border-color: transparent;
+  }
+  .pwa-cta-btn .material-symbols-rounded {
+    font-size: 20px;
+  }
+  .pwa-sub-cta {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.45);
+    margin-top: 10px;
+    font-weight: 500;
+  }
 </style>
 </head>
 <body>
@@ -830,7 +862,7 @@ body{
     <span class="nav-name">Bottle Code</span>
   </a>
   <div class="nav-r">
-    <button class="nav-btn rpl" onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfd9l_5vu8OVb9TSTl16I7EckPBataCWLXTbIZeSROiU_p2jQ/viewform?usp=dialog','_blank')">Comenzar</button>
+    <button class="nav-btn rpl" id="nav-install-btn" onclick="triggerInstall()">Comenzar</button>
     <img id="u-av" src="" alt="" class="nav-av" onclick="handleLogout()">
   </div>
 </header>
@@ -900,6 +932,12 @@ body{
             data-text="signin_with" data-locale="es">
           </div>
         </div>
+        <!-- PWA Install CTA Below Google -->
+        <button id="hero-install-btn" class="pwa-cta-btn rpl" onclick="triggerInstall()">
+          <span class="material-symbols-rounded">install_mobile</span>
+          Instalar App FounderDash
+        </button>
+        <div id="pwa-hint" class="pwa-sub-cta" style="display:none">Obtén la experiencia premium en tu pantalla de inicio</div>
       </div>
     </div>
   </section>
@@ -1605,10 +1643,53 @@ document.querySelectorAll('[data-tab]').forEach(b=>{
   play();
 })();
 
-/* PWA */
-let dp=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;});
-if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
+/* PWA Engine */
+let dp = null;
+const nIB = document.getElementById('nav-install-btn');
+const hIB = document.getElementById('hero-install-btn');
+const pHt = document.getElementById('pwa-hint');
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  dp = e;
+  // Make buttons visible when installation is possible
+  if (hIB) hIB.style.display = 'flex';
+  if (pHt) pHt.style.display = 'block';
+  console.log('PWA: Prompt ready');
+});
+
+async function triggerInstall() {
+  if (dp) {
+    dp.prompt();
+    const { outcome } = await dp.userChoice;
+    if (outcome === 'accepted') {
+      dp = null;
+      if (hIB) hIB.style.display = 'none';
+      if (pHt) pHt.style.display = 'none';
+      snk('¡Instalación iniciada! 🚀');
+    }
+  } else {
+    // If already installed or not available, scroll to login
+    document.getElementById('video-cta')?.scrollIntoView({ behavior: 'smooth' });
+    if(window.matchMedia('(display-mode: standalone)').matches) {
+       snk('App ya instalada ✓');
+    } else {
+       snk('Usa Google para comenzar');
+    }
+  }
+}
+
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+// Check for installed state on load
+window.addEventListener('load', () => {
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (hIB) hIB.style.display = 'none';
+    if (pHt) pHt.style.display = 'none';
+  }
+});
 
 /* JWT */
 function jwt(t){
