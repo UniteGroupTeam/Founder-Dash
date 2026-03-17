@@ -851,6 +851,60 @@ body{
     margin-top: 10px;
     font-weight: 500;
   }
+  /* PWA Install CTA */
+  .pwa-cta-btn {
+    margin-top: 18px;
+    background: rgba(255,55,95,0.1);
+    border: 1px solid rgba(255,55,95,0.3);
+    color: #fff;
+    padding: 12px 28px;
+    border-radius: 100px;
+    font: 600 0.85rem var(--font);
+    display: none; /* Hidden until beforeinstallprompt */
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s var(--ease);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 24px rgba(255,55,95,0.15);
+  }
+  .pwa-cta-btn:hover {
+    background: var(--pink);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 32px rgba(255,55,95,0.4);
+    border-color: transparent;
+  }
+  .pwa-cta-btn .material-symbols-rounded {
+    font-size: 20px;
+  }
+  .pwa-sub-cta {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.45);
+    margin-top: 10px;
+    font-weight: 500;
+  }
+
+  /* Goal Modal */
+  .goal-modal {
+    position: fixed; inset: 0; z-index: 4000;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(15px);
+    display: none; align-items: center; justify-content: center; padding: 20px;
+  }
+  .goal-modal.on { display: flex; animation: pwFade 0.3s ease; }
+  .goal-card {
+    background: #111; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 28px; padding: 32px; width: 100%; max-width: 400px;
+  }
+  .goal-card h3 { color: #fff; margin-bottom: 24px; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
+  .file-input-label {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    height: 120px; border: 2px dashed rgba(255,255,255,0.1); border-radius: 16px;
+    margin-bottom: 20px; cursor: pointer; color: rgba(255,255,255,0.4); font-size: 0.8rem;
+    transition: all 0.2s;
+  }
+  .file-input-label:hover { border-color: var(--pink); color: var(--pink); background: var(--pink-glass); }
+  .file-input-label img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; }
+  #goal-img-input { display: none; }
 </style>
 </head>
 <body>
@@ -1183,6 +1237,13 @@ body{
         <span class="material-symbols-rounded">rocket_launch</span>
         Quiero mi FounderDash
       </button>
+      <div style="margin-top: 24px;">
+        <button id="how-install-btn" class="pwa-cta-btn rpl" onclick="triggerInstall()" style="display:inline-flex; border: 1px solid rgba(255,55,95,0.4); background: rgba(0,0,0,0.4);">
+          <span class="material-symbols-rounded">download_for_offline</span>
+          Instalar con prueba gratis
+        </button>
+      </div>
+    </div>
     </div>
 
   </section><!-- /how -->
@@ -1235,7 +1296,12 @@ body{
           </div>
         </div>
         <div class="dc-card">
-          <h3><span class="material-symbols-rounded">emoji_events</span>Metas</h3>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="margin-bottom:0;"><span class="material-symbols-rounded">emoji_events</span>Metas</h3>
+            <button class="sbtn rpl" style="width:auto; padding:8px 16px; font-size:0.75rem;" onclick="showAddGoalPrompt()">
+              <span class="material-symbols-rounded">add</span>Nueva Meta
+            </button>
+          </div>
           <div class="gf" id="gfeed"></div>
         </div>
       </div>
@@ -1256,35 +1322,36 @@ body{
   <span id="sm">Venta registrada</span>
 </div>
 
-<!-- ── PAYWALL MODAL ── -->
-<div class="paywall-modal" id="paywall-modal">
-  <div class="paywall-card">
-    <img class="pw-logo" src="https://i.imgur.com/kgsweBr.png" alt="Bottle Code">
-    <div class="pw-lock">🔒</div>
-    <h2 class="pw-title">Período Starter completado</h2>
-    <p class="pw-sub">
-      Has alcanzado el límite de la versión Starter.<br>
-      Desbloquea el potencial ilimitado de tu negocio y escala sin restricciones.
-    </p>
-    <button class="pw-cta rpl" onclick="window.open('https://bottle-code-rodricg30-shop.fourthwall.com/en-mxn','_blank')">
-      🚀 Desbloquear Poder Ilimitado
-    </button>
-    <button class="pw-dismiss" id="pw-dismiss-btn">Ver mis datos →</button>
+<!-- ── GOAL CREATION MODAL ── -->
+<div class="goal-modal" id="goal-modal">
+  <div class="goal-card">
+    <h3><span class="material-symbols-rounded">stars</span>Nueva Meta</h3>
+    <label for="goal-img-input" class="file-input-label" id="goal-img-prev">
+      <span class="material-symbols-rounded">add_a_photo</span>
+      <span>Subir imagen o foto</span>
+    </label>
+    <input type="file" id="goal-img-input" accept="image/*">
+    
+    <div class="fld"><input type="text" id="goal-title" placeholder=" " required><label>Título (ej. MacBook M4)</label></div>
+    <div class="fld"><input type="number" id="goal-target" placeholder=" " required><label>Monto Objetivo ($)</label></div>
+    
+    <button class="sbtn rpl" onclick="saveNewGoal()">Guardar Meta</button>
+    <button class="pw-dismiss" style="margin-top:16px; width:100%;" onclick="closeGoalModal()">Cancelar</button>
   </div>
 </div>
 
 <script>
 // ── ENDPOINTS ──
-// User's own Google Sheet (writes sales)
-const WH='https://script.google.com/macros/s/AKfycby0R25x7dwtNM53xaLIRxaKJlys9uoU6Amllma2u1-e3b8vNsYGs1iAaBItywVpiHch_Q/exec';
-// Agency Master (copies every sale, returns limitReached, tracks emails)
-const MASTER='https://script.google.com/macros/s/AKfycbwbeyTuYTCpUMbXTYCzGSWhp8JM0aE3X-iDUJcM92a6_7uEHAmWGXYoEbjI8xlxxRE-/exec';
-// Paywall destination
-const UNLOCK_URL='https://bottle-code-rodricg30-shop.fourthwall.com/en-mxn';
+const WH = 'https://script.google.com/macros/s/AKfycby0R25x7dwtNM53xaLIRxaKJlys9uoU6Amllma2u1-e3b8vNsYGs1iAaBItywVpiHch_Q/exec';
+const MASTER = 'https://script.google.com/macros/s/AKfycbwbeyTuYTCpUMbXTYCzGSWhp8JM0aE3X-iDUJcM92a6_7uEHAmWGXYoEbjI8xlxxRE-/exec';
+const UNLOCK_URL = 'https://bottle-code-rodricg30-shop.fourthwall.com/en-mxn';
 
-let ci=null;
-let userEmail='';
-let userPicture='';
+let ci = null;
+let userEmail = '';
+let userPicture = '';
+let userSheetId = ''; // This will be stored in localStorage after the first successful sync or set by user
+let realSales = [];
+let realGoals = [];
 
 /* ── Ripple ── */
 document.addEventListener('click',e=>{
@@ -1376,6 +1443,93 @@ function updateSaleCounter(count){
   el.style.display='block';
 }
 
+/* ── REAL GOALS ENGINE (LOCAL STORAGE) ── */
+let currentGoalImg = "";
+
+function showAddGoalPrompt() {
+  document.getElementById('goal-modal').classList.add('on');
+}
+
+function closeGoalModal() {
+  document.getElementById('goal-modal').classList.remove('on');
+  document.getElementById('goal-img-prev').innerHTML = '<span class="material-symbols-rounded">add_a_photo</span><span>Subir imagen o foto</span>';
+  currentGoalImg = "";
+}
+
+// Preview and convert image to Base64
+document.getElementById('goal-img-input').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(event) {
+    currentGoalImg = event.target.result;
+    document.getElementById('goal-img-prev').innerHTML = `<img src="${currentGoalImg}">`;
+  };
+  reader.readAsDataURL(file);
+});
+
+function saveNewGoal() {
+  const titulo = document.getElementById('goal-title').value;
+  const objetivo = parseFloat(document.getElementById('goal-target').value);
+  
+  if (!titulo || isNaN(objetivo)) { snk('Completa los campos'); return; }
+
+  const newGoal = { titulo, objetivo, actual: 0, img: currentGoalImg };
+  
+  // Save to Local Storage
+  let goals = JSON.parse(localStorage.getItem('fd_local_goals') || '[]');
+  goals.push(newGoal);
+  localStorage.setItem('fd_local_goals', JSON.stringify(goals));
+  
+  renderRealGoals();
+  closeGoalModal();
+  snk('Meta guardada en tu dispositivo ✓');
+}
+
+function renderRealGoals() {
+  const container = document.getElementById('gfeed');
+  const goals = JSON.parse(localStorage.getItem('fd_local_goals') || '[]');
+  
+  if (goals.length === 0) {
+    container.innerHTML = '<p style="color:rgba(255,255,255,0.2); grid-column:1/-1; text-align:center; padding:20px;">No tienes metas. ¡Añade una!</p>';
+    return;
+  }
+
+  container.innerHTML = goals.map((g, idx) => {
+    const p = Math.min(100, Math.round(g.actual / g.objetivo * 100));
+    return `
+      <div class="gc" onclick="updateGoalProgress(${idx})">
+        <img class="gi" src="${g.img || 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=300&q=80'}">
+        <div class="gl">
+          <h4>${g.titulo}</h4>
+          <div class="gbar"><div class="gfill" style="width:${p}%"></div></div>
+          <span class="gpct">$${Number(g.actual).toLocaleString()} · ${p}%</span>
+        </div>
+        <button class="pw-dismiss" style="position:absolute; top:8px; right:8px; background:rgba(0,0,0,0.5); border-radius:50%; width:24px; height:24px; display:flex; align-items:center; justify-content:center; color:#fff;" onclick="event.stopPropagation(); deleteGoal(${idx})">×</button>
+      </div>`;
+  }).join('');
+}
+
+function updateGoalProgress(idx) {
+  const goals = JSON.parse(localStorage.getItem('fd_local_goals') || '[]');
+  const g = goals[idx];
+  const add = parseFloat(prompt(`Añadir ahorro a "${g.titulo}" ($):`));
+  if (isNaN(add)) return;
+
+  g.actual = Number(g.actual) + add;
+  localStorage.setItem('fd_local_goals', JSON.stringify(goals));
+  renderRealGoals();
+  snk('Ahorro actualizado ✓');
+}
+
+function deleteGoal(idx) {
+  if (!confirm('¿Eliminar esta meta?')) return;
+  let goals = JSON.parse(localStorage.getItem('fd_local_goals') || '[]');
+  goals.splice(idx, 1);
+  localStorage.setItem('fd_local_goals', JSON.stringify(goals));
+  renderRealGoals();
+}
+
 /* ── AUTH ── */
 window.handleCredentialResponse=resp=>{
   const p=jwt(resp.credential);
@@ -1395,8 +1549,7 @@ window.handleCredentialResponse=resp=>{
   setTimeout(()=>{
     d.classList.add('on');
     initChart();
-    renderGoals();
-    // Check limits from the cloud after auth
+    renderRealGoals(); // From LocalStorage
     checkLimitOnLoad();
   },50);
   snk('Conectado · Bienvenido 🎉');
@@ -1421,57 +1574,53 @@ document.getElementById('sf').addEventListener('submit',async e=>{
   bi.style.animation='spin 1s linear infinite';
 
   const payload={
+    action: 'register', // Required for dual check
+    sheetId: userSheetId, // Required by Master
     concepto:document.getElementById('concepto').value,
     monto:+document.getElementById('monto').value,
     categoria:document.getElementById('categoria').value,
-    negocioId:document.getElementById('negocio-id').value,
+    negocioID:document.getElementById('negocio-id').value, // Matches script negocioID
     timestamp:new Date().toLocaleString('es-MX'),
     email:userEmail
   };
 
   try{
-    // 1️⃣ POST to Master (Agency Control Center) — reads limit + logs sale
+    // 1️⃣ POST to Master (Agency Control Center)
     let limitReached=false;
     let newCount=0;
     try{
-      const masterRes=await fetch(MASTER,{
+      const masterRes = await fetch(MASTER, {
         method:'POST',
-        mode:'cors',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({...payload,action:'register'})
+        headers:{'Content-Type':'application/json'}, // Script parses JSON
+        body:JSON.stringify(payload)
       });
-      const masterData=await masterRes.json();
-      limitReached=masterData.limitReached||false;
-      newCount=masterData.count||0;
-    }catch(masterErr){
-      // Master unreachable: allow local registration, log for monitoring
-      console.warn('Master endpoint unreachable:',masterErr);
+      const masterData = await masterRes.json();
+      limitReached = masterData.limitReached || false;
+      newCount = masterData.salesCount || 0; // Matches script salesCount
+    } catch(masterErr) {
+      console.warn('Master endpoint unreachable:', masterErr);
     }
 
     if(limitReached){
-      // 🚫 Limit hit: block and redirect
       lockFormWithUnlock();
       showPaywallModal();
-      snk('Límite Starter alcanzado');
+      snk('Límite de prueba alcanzado');
       return;
     }
 
-    // 2️⃣ POST to User's own Google Sheet
-    bl.textContent='Guardando...';
-    await fetch(WH,{
-      method:'POST',
-      mode:'no-cors',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(payload)
-    });
-
-    // ✅ Success
+    // 2️⃣ POST to User's own Google Sheet (via Master logic or direct)
+    // The provided script already handles writing to BOTH. 
+    // We only need one POST to the Master/Customer script if it does both.
+    
+    // Success
     updateSaleCounter(newCount);
-    pushChart(payload.monto);
+    realSales.push({ fecha: new Date(), monto: payload.monto, concepto: payload.concepto });
+    renderRealSalesChart();
     e.target.reset();
     snk('Venta registrada en la nube ✓');
 
   }catch(err){
+    console.error(err);
     snk('Error de conexión');
   }finally{
     btn.disabled=false;
@@ -1647,6 +1796,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>{
 let dp = null;
 const nIB = document.getElementById('nav-install-btn');
 const hIB = document.getElementById('hero-install-btn');
+const lowIB = document.getElementById('how-install-btn'); // Bottom button
 const pHt = document.getElementById('pwa-hint');
 
 window.addEventListener('beforeinstallprompt', e => {
@@ -1654,27 +1804,37 @@ window.addEventListener('beforeinstallprompt', e => {
   dp = e;
   // Make buttons visible when installation is possible
   if (hIB) hIB.style.display = 'flex';
+  if (lowIB) lowIB.style.display = 'inline-flex';
   if (pHt) pHt.style.display = 'block';
   console.log('PWA: Prompt ready');
 });
 
 async function triggerInstall() {
   if (dp) {
-    dp.prompt();
-    const { outcome } = await dp.userChoice;
-    if (outcome === 'accepted') {
-      dp = null;
-      if (hIB) hIB.style.display = 'none';
-      if (pHt) pHt.style.display = 'none';
-      snk('¡Instalación iniciada! 🚀');
+    try {
+      dp.prompt();
+      const { outcome } = await dp.userChoice;
+      if (outcome === 'accepted') {
+        dp = null;
+        [hIB, lowIB, pHt].forEach(el => { if(el) el.style.display = 'none'; });
+        snk('¡Instalación iniciada! 🚀');
+      }
+    } catch (err) {
+      console.error('Install prompt failed', err);
     }
   } else {
-    // If already installed or not available, scroll to login
-    document.getElementById('video-cta')?.scrollIntoView({ behavior: 'smooth' });
-    if(window.matchMedia('(display-mode: standalone)').matches) {
+    // If not available (installed or desktop/ios)
+    if (window.matchMedia('(display-mode: standalone)').matches) {
        snk('App ya instalada ✓');
     } else {
-       snk('Usa Google para comenzar');
+       // Manual instruction for iOS or unsupported
+       const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+       if (isIOS) {
+          alert('En iOS: Toca el botón "Compartir" y selecciona "Añadir a pantalla de inicio"');
+       } else {
+          document.getElementById('video-cta')?.scrollIntoView({ behavior: 'smooth' });
+          snk('Usa Google para comenzar');
+       }
     }
   }
 }
@@ -1685,9 +1845,9 @@ if('serviceWorker' in navigator) {
 
 // Check for installed state on load
 window.addEventListener('load', () => {
-  if (window.matchMedia('(display-mode: standalone)').matches) {
-    if (hIB) hIB.style.display = 'none';
-    if (pHt) pHt.style.display = 'none';
+  const isInstalled = window.matchMedia('(display-mode: standalone)').matches;
+  if (isInstalled) {
+    [hIB, lowIB, pHt].forEach(el => { if(el) el.style.display = 'none'; });
   }
 });
 
