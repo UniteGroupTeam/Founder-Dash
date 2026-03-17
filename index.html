@@ -5,114 +5,768 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FounderDash | Bottle Code</title>
     <link rel="icon" href="https://imgur.com/4gOYmU0">
-    <link rel="manifest" href="/assets/manifest-BI-q_BFA.json">
-    <meta name="theme-color" content="#6750A4">
+    <link rel="manifest" href="./assets/manifest.json">
+    <meta name="theme-color" content="#0F0B1A">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-    <!-- Google Identity Services -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0" rel="stylesheet">
     <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script type="module" crossorigin src="/assets/index-keNpvzn1.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CUARdSJi.css">
+    <!-- Standalone PWA: CSS and JS are embedded in this file -->
+
+    <style>
+        /* =============================================
+           DESIGN TOKENS — Material You Dark Theme
+        ============================================= */
+        :root {
+            --m3-primary:        #D0BCFF;
+            --m3-on-primary:     #381E72;
+            --m3-primary-c:      #4F378B;
+            --m3-on-primary-c:   #EADDFF;
+            --m3-secondary:      #CCC2DC;
+            --m3-tertiary:       #EFB8C8;
+            --m3-error:          #F2B8B5;
+            --m3-bg:             #0F0B1A;
+            --m3-surface:        #141218;
+            --m3-surface-v:      #1D1B20;
+            --m3-surface-c-lo:   #1D1B20;
+            --m3-surface-c-mid:  #231F26;
+            --m3-surface-c-hi:   #2B2930;
+            --m3-on-surface:     #E6E1E5;
+            --m3-on-surf-v:      #CAC4D0;
+            --m3-outline:        #49454F;
+            --m3-outline-v:      #79747E;
+            --m3-scrim:          rgba(0,0,0,0.7);
+
+            /* Glass Layer */
+            --glass-bg:          rgba(29, 27, 32, 0.72);
+            --glass-border:      rgba(208, 188, 255, 0.12);
+            --glass-blur:        16px;
+
+            /* Typography */
+            --font-display:      'Outfit', sans-serif;
+            --font-body:         'Roboto', sans-serif;
+
+            /* Easing */
+            --ease-emph:         cubic-bezier(0.2, 0, 0, 1);
+            --ease-std:          cubic-bezier(0.4, 0, 0.2, 1);
+            --ease-dec:          cubic-bezier(0, 0, 0.2, 1);
+            --dur-mid:           300ms;
+            --dur-long:          500ms;
+        }
+
+        /* =============================================
+           RESET & BASE
+        ============================================= */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--m3-bg);
+            color: var(--m3-on-surface);
+            min-height: 100vh;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+            /* Radial ambient glow */
+            background-image:
+                radial-gradient(ellipse 80% 60% at 20% 0%, rgba(103,80,164,0.18) 0%, transparent 70%),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(208,188,255,0.08) 0%, transparent 70%);
+        }
+
+        /* =============================================
+           RIPPLE EFFECT
+        ============================================= */
+        .ripple-host { position: relative; overflow: hidden; }
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.18);
+            transform: scale(0);
+            animation: rippleAnim 600ms linear forwards;
+            pointer-events: none;
+        }
+        @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
+
+        /* =============================================
+           HEADER / TOP-APP-BAR
+        ============================================= */
+        .bottle-header {
+            position: sticky;
+            top: 0;
+            z-index: 900;
+            height: 64px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(20, 18, 24, 0.88);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .branding-link {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+            color: inherit;
+            transition: opacity var(--dur-mid) var(--ease-std);
+        }
+        .branding-link:hover { opacity: 0.75; }
+
+        .brand-logo {
+            height: 30px;
+            border-radius: 8px;
+            filter: drop-shadow(0 0 6px rgba(208,188,255,0.4));
+        }
+
+        .brand-text {
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--m3-on-surf-v);
+            letter-spacing: 0.01em;
+        }
+
+        .avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--m3-primary);
+            cursor: pointer;
+            transition: transform var(--dur-mid) var(--ease-std), box-shadow var(--dur-mid);
+        }
+        .avatar:hover { transform: scale(1.08); box-shadow: 0 0 0 4px rgba(208,188,255,0.2); }
+
+        /* =============================================
+           VIEWS SYSTEM
+        ============================================= */
+        .view { display: none; opacity: 0; transition: opacity var(--dur-long) var(--ease-dec); }
+        .view.active { display: block; opacity: 1; }
+        .hidden { display: none !important; }
+
+        /* =============================================
+           LANDING PAGE
+        ============================================= */
+        #landing-view {
+            min-height: calc(100vh - 64px);
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 24px 80px;
+        }
+        #landing-view.active { display: flex !important; }
+
+        .hero {
+            text-align: center;
+            max-width: 680px;
+            width: 100%;
+        }
+
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            background: rgba(208,188,255,0.1);
+            border: 1px solid rgba(208,188,255,0.2);
+            font-size: 0.78rem;
+            font-weight: 500;
+            color: var(--m3-primary);
+            margin-bottom: 24px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+        .hero-eyebrow .material-symbols-rounded { font-size: 14px; }
+
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(3rem, 10vw, 5.5rem);
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -0.03em;
+            color: var(--m3-on-surface);
+            margin-bottom: 20px;
+        }
+
+        .accent {
+            background: linear-gradient(135deg, #D0BCFF 0%, #A78BFA 50%, #EFB8C8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-sub {
+            font-size: 1.15rem;
+            line-height: 1.65;
+            color: var(--m3-on-surf-v);
+            margin-bottom: 40px;
+        }
+
+        .gsi-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-top: 48px;
+        }
+
+        .benefit-card {
+            padding: 28px 24px;
+            border-radius: 24px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(var(--glass-blur));
+            text-align: left;
+            transition: transform var(--dur-mid) var(--ease-emph), border-color var(--dur-mid);
+        }
+        .benefit-card:hover { transform: translateY(-4px); border-color: rgba(208,188,255,0.25); }
+        .benefit-card .material-symbols-rounded {
+            font-size: 36px;
+            color: var(--m3-primary);
+            display: block;
+            margin-bottom: 16px;
+        }
+        .benefit-card h3 { font-family: var(--font-display); font-size: 1.05rem; margin-bottom: 8px; font-weight: 600; }
+        .benefit-card p { font-size: 0.9rem; color: var(--m3-on-surf-v); line-height: 1.5; }
+
+        .device-hint {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 32px;
+            padding: 12px 20px;
+            border-radius: 100px;
+            background: rgba(208,188,255,0.07);
+            border: 1px solid var(--glass-border);
+            font-size: 0.9rem;
+            color: var(--m3-on-surf-v);
+        }
+
+        /* =============================================
+           BUTTONS — Material 3
+        ============================================= */
+        .m3-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px 28px;
+            border: none;
+            border-radius: 100px;
+            font-family: var(--font-display);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform var(--dur-mid) var(--ease-std), box-shadow var(--dur-mid);
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.02em;
+        }
+
+        .filled {
+            background: linear-gradient(135deg, #7C67D4, #6750A4);
+            color: #fff;
+            box-shadow: 0 4px 24px rgba(103,80,164,0.4);
+        }
+        .filled:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(103,80,164,0.55); }
+        .filled:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .elevated {
+            background: var(--m3-surface-c-mid);
+            color: var(--m3-primary);
+            border: 1px solid var(--glass-border);
+        }
+        .elevated:hover { background: var(--m3-surface-c-hi); }
+
+        .full-width { width: 100%; }
+
+        /* =============================================
+           DASHBOARD LAYOUT
+        ============================================= */
+        #dashboard-view { display: none; }
+        #dashboard-view.active { display: block; }
+
+        .dashboard-layout {
+            display: flex;
+            gap: 0;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* ---- NAV RAIL (Desktop) ---- */
+        .nav-rail {
+            width: 88px;
+            background: var(--glass-bg);
+            border-right: 1px solid var(--glass-border);
+            backdrop-filter: blur(var(--glass-blur));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 32px 0;
+            gap: 8px;
+            position: sticky;
+            top: 64px;
+            height: calc(100vh - 64px);
+            flex-shrink: 0;
+        }
+
+        .nav-item {
+            width: 64px;
+            height: 64px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            color: var(--m3-on-surf-v);
+            font-family: var(--font-body);
+            font-size: 0.7rem;
+            font-weight: 500;
+            transition: background var(--dur-mid) var(--ease-std), color var(--dur-mid);
+            position: relative;
+            overflow: hidden;
+        }
+        .nav-item:hover { background: rgba(208,188,255,0.08); }
+        .nav-item.active { background: var(--m3-primary-c); color: var(--m3-on-primary-c); }
+        .nav-item .material-symbols-rounded { font-size: 26px; }
+
+        /* Bottom Nav (Mobile) */
+        .bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            justify-content: space-around;
+            align-items: center;
+            background: rgba(20, 18, 24, 0.92);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            z-index: 800;
+            padding: 0 8px;
+        }
+        .bottom-nav .nav-item { width: auto; flex: 1; height: 64px; font-size: 0.7rem; border-radius: 16px; }
+
+        /* =============================================
+           DASHBOARD CONTENT
+        ============================================= */
+        .dashboard-content {
+            flex: 1;
+            padding: 36px 32px;
+            overflow-y: auto;
+        }
+
+        .dash-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 36px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .dash-header h2 {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--m3-on-surface);
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 100px;
+            background: rgba(208,188,255,0.1);
+            border: 1px solid rgba(208,188,255,0.2);
+            font-size: 0.83rem;
+            font-weight: 500;
+            color: var(--m3-primary);
+        }
+        .chip::before {
+            content: '';
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #4CAF50;
+            box-shadow: 0 0 6px #4CAF50;
+        }
+
+        /* ---- MAIN GRID ---- */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            grid-template-rows: auto auto;
+            gap: 24px;
+        }
+
+        /* =============================================
+           CARDS — Glassmorphism
+        ============================================= */
+        .m3-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            padding: 28px;
+            transition: border-color var(--dur-mid);
+        }
+        .m3-card:hover { border-color: rgba(208,188,255,0.22); }
+        .m3-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--m3-on-surf-v);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .m3-card h3 .material-symbols-rounded { font-size: 20px; color: var(--m3-primary); }
+
+        /* Chart Card */
+        .chart-card {
+            grid-column: 1;
+            background:
+                linear-gradient(135deg, rgba(103,80,164,0.12) 0%, rgba(29,27,32,0.88) 50%),
+                var(--glass-bg);
+            position: relative;
+            overflow: hidden;
+        }
+        .chart-card::before {
+            content: '';
+            position: absolute;
+            top: -40%;
+            left: -20%;
+            width: 80%;
+            height: 80%;
+            background: radial-gradient(ellipse, rgba(103,80,164,0.15) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .chart-wrapper { height: 280px; position: relative; z-index: 1; }
+
+        /* Form Card */
+        .form-card { grid-column: 2; grid-row: 1 / 3; }
+
+        /* Goals Card */
+        .goals-card { grid-column: 1; }
+
+        /* =============================================
+           FORM INPUTS — Material 3 Filled Style
+        ============================================= */
+        .input-field {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .input-field input,
+        .input-field select {
+            width: 100%;
+            padding: 20px 16px 8px;
+            background: var(--m3-surface-c-mid);
+            border: none;
+            border-bottom: 2px solid var(--m3-outline);
+            border-radius: 12px 12px 0 0;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            color: var(--m3-on-surface);
+            outline: none;
+            transition: border-color var(--dur-mid);
+            box-sizing: border-box;
+        }
+        .input-field input:focus,
+        .input-field select:focus {
+            border-bottom-color: var(--m3-primary);
+        }
+        .input-field select { appearance: none; }
+        .input-field label {
+            position: absolute;
+            left: 16px;
+            top: 14px;
+            font-size: 0.82rem;
+            font-weight: 500;
+            color: var(--m3-outline-v);
+            pointer-events: none;
+            transition: all var(--dur-mid) var(--ease-std);
+        }
+        .input-field input:focus + label,
+        .input-field input:not(:placeholder-shown) + label {
+            top: 5px;
+            font-size: 0.73rem;
+            color: var(--m3-primary);
+        }
+
+        /* =============================================
+           GOALS FEED — Instagram Premium Style
+        ============================================= */
+        .goals-feed {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .goal-item {
+            border-radius: 24px;
+            overflow: hidden;
+            background: var(--m3-surface-c-lo);
+            border: 1px solid var(--glass-border);
+            position: relative;
+            aspect-ratio: 3 / 4;
+            cursor: pointer;
+            transition: transform var(--dur-mid) var(--ease-emph);
+        }
+        .goal-item:hover { transform: scale(1.03); }
+
+        .goal-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .goal-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 16px 16px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.85));
+        }
+        .goal-overlay h4 { font-family: var(--font-display); font-size: 0.95rem; font-weight: 600; color: #fff; margin-bottom: 8px; }
+        .goal-progress-bar {
+            height: 5px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 100px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+        .goal-fill {
+            height: 100%;
+            border-radius: 100px;
+            background: linear-gradient(90deg, #D0BCFF, #A78BFA);
+            transition: width 1.2s var(--ease-dec);
+        }
+        .goal-pct { font-size: 0.78rem; color: rgba(255,255,255,0.75); }
+
+        /* =============================================
+           SNACKBAR — Material 3
+        ============================================= */
+        .snackbar {
+            visibility: hidden;
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120%);
+            z-index: 1200;
+            min-width: 280px;
+            background: #E6E1E5;
+            color: #141218;
+            font-family: var(--font-body);
+            font-size: 0.9rem;
+            font-weight: 500;
+            padding: 14px 24px;
+            border-radius: 12px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform var(--dur-mid) var(--ease-dec), visibility 0s var(--dur-mid);
+        }
+        .snackbar.show {
+            visibility: visible;
+            transform: translateX(-50%) translateY(0);
+            transition: transform var(--dur-mid) var(--ease-dec);
+            animation: snackHide 0.4s var(--ease-std) 3s forwards;
+        }
+        .snackbar .material-symbols-rounded { font-size: 20px; color: #4CAF50; }
+        @keyframes snackHide { to { transform: translateX(-50%) translateY(120%); visibility: hidden; } }
+
+        /* =============================================
+           RESPONSIVE
+        ============================================= */
+        @media (max-width: 900px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto;
+            }
+            .chart-card { grid-column: 1; }
+            .form-card { grid-column: 1; grid-row: auto; }
+            .goals-card { grid-column: 1; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-rail { display: none; }
+            .bottom-nav { display: flex; }
+            .dashboard-content { padding: 24px 16px 100px; }
+            .dash-header h2 { font-size: 1.5rem; }
+
+            #landing-view { padding: 24px 20px 100px; }
+            .hero h1 { font-size: clamp(2.5rem, 11vw, 4rem); }
+        }
+
+        @media (min-width: 769px) {
+            .bottom-nav { display: none !important; }
+            .nav-rail { display: flex; }
+        }
+    </style>
 </head>
-<body class="light-theme">
-    <!-- Header Branding -->
+
+<body>
+    <!-- ==================== HEADER ==================== -->
     <header class="bottle-header">
-        <a href="https://bottle-code-rodricg30-shop.fourthwall.com/en-mxn" target="_blank" class="branding-link">
-            <img src="https://imgur.com/4gOYmU0" alt="Bottle Code Logo" class="brand-logo">
+        <a href="https://bottle-code-rodricg30-shop.fourthwall.com/en-mxn"
+           target="_blank" class="branding-link">
+            <img src="https://imgur.com/4gOYmU0" alt="Bottle Code" class="brand-logo">
             <span class="brand-text">Desarrollado por Bottle Code</span>
         </a>
         <div id="user-profile" class="hidden">
-            <img id="user-avatar" src="" alt="Avatar" class="avatar">
+            <img id="user-avatar" src="" alt="Avatar" class="avatar"
+                 title="Cerrar sesión" onclick="handleLogout()">
         </div>
     </header>
 
     <main id="app-container">
-        <!-- Landing Page View -->
+
+        <!-- ==================== LANDING ==================== -->
         <section id="landing-view" class="view active">
             <div class="hero">
+                <div class="hero-eyebrow">
+                    <span class="material-symbols-rounded">rocket_launch</span>
+                    Bottle Code Agency · FounderDash 2.0
+                </div>
+
                 <h1>Founder<span class="accent">Dash</span></h1>
-                <p>La infraestructura definitiva de **Bottle Code Agency** para el fundador moderno.</p>
+                <p class="hero-sub">
+                    La infraestructura premium que convierte tus ventas en datos de poder.
+                    Conectado a Google Sheets. En tiempo real.
+                </p>
+
+                <!-- GSI Button — preserved exactly -->
+                <div class="gsi-wrapper">
+                    <div id="g_id_onload"
+                         data-client_id="387613368123-60jmf18v6m894q3srsevo2f6ssu4mo19.apps.googleusercontent.com"
+                         data-callback="handleCredentialResponse"
+                         data-auto_prompt="false">
+                    </div>
+                    <div class="g_id_signin"
+                         data-type="standard"
+                         data-shape="pill"
+                         data-theme="filled_blue"
+                         data-size="large"
+                         data-text="signin_with"
+                         data-locale="es">
+                    </div>
+                </div>
+
+                <button id="auth-btn" class="m3-btn filled shadow-glow hidden ripple-host">
+                    <span class="material-symbols-rounded">login</span>
+                    <span>Acceder con Google</span>
+                </button>
+
                 <div class="benefits-grid">
                     <div class="benefit-card">
                         <span class="material-symbols-rounded">cloud_sync</span>
                         <h3>Google Sync</h3>
-                        <p>Tus ventas directo a tu Google Sheet privado.</p>
+                        <p>Cada venta va directo a tu Google Sheet privado sin intermediarios.</p>
                     </div>
                     <div class="benefit-card">
-                        <span class="material-symbols-rounded">monitoring</span>
+                        <span class="material-symbols-rounded">query_stats</span>
                         <h3>Análisis Pro</h3>
-                        <p>Gráficas dinámicas con los últimos 10 registros.</p>
+                        <p>Gráficas en tiempo real con los últimos 10 movimientos.</p>
+                    </div>
+                    <div class="benefit-card">
+                        <span class="material-symbols-rounded">verified_user</span>
+                        <h3>Datos Tuyos</h3>
+                        <p>Autenticación OAuth2. Tus credenciales nunca pasan por nuestros servidores.</p>
                     </div>
                 </div>
-                
-                <div id="g_id_onload"
-                     data-client_id="387613368123-60jmf18v6m894q3srsevo2f6ssu4mo19.apps.googleusercontent.com"
-                     data-callback="handleCredentialResponse"
-                     data-auto_prompt="false">
-                </div>
-                <div class="g_id_signin" data-type="standard"></div>
-                
-                <button id="auth-btn" class="m3-btn filled shadow-glow hidden">
-                    <span class="material-symbols-rounded">login</span>
-                    <span>Acceder con Google</span>
-                </button>
             </div>
 
-            <!-- Device Specific Sections -->
             <div id="desktop-pro-section" class="device-hint hidden">
                 <span class="material-symbols-rounded">desktop_windows</span>
-                <span>Dashboard Pro Activo</span>
+                Dashboard Pro Activo · Modo Escritorio
             </div>
             <div id="mobile-install-section" class="device-hint hidden">
-                <button id="install-btn" class="m3-btn elevated">
+                <button id="install-btn" class="m3-btn elevated ripple-host">
                     <span class="material-symbols-rounded">download</span>
-                    <span>Instalar App</span>
+                    Instalar App
                 </button>
             </div>
         </section>
 
-        <!-- Dashboard View -->
+        <!-- ==================== DASHBOARD ==================== -->
         <section id="dashboard-view" class="view">
             <div class="dashboard-layout">
-                <!-- Navigation Rail -->
+
+                <!-- Nav Rail -->
                 <nav class="nav-rail">
-                    <button class="nav-item active" data-view="overview">
-                        <span class="material-symbols-rounded">home</span>
+                    <button class="nav-item active ripple-host" data-tab="overview">
+                        <span class="material-symbols-rounded">grid_view</span>
+                        Inicio
                     </button>
-                    <button class="nav-item" data-view="add-sale">
-                        <span class="material-symbols-rounded">add_circle</span>
+                    <button class="nav-item ripple-host" data-tab="sales">
+                        <span class="material-symbols-rounded">receipt_long</span>
+                        Ventas
                     </button>
-                    <button class="nav-item" id="logout-btn">
+                    <button class="nav-item ripple-host" data-tab="goals">
+                        <span class="material-symbols-rounded">emoji_events</span>
+                        Metas
+                    </button>
+                    <div style="flex:1"></div>
+                    <button class="nav-item ripple-host" id="logout-btn">
                         <span class="material-symbols-rounded">logout</span>
+                        Salir
                     </button>
                 </nav>
 
+                <!-- Content -->
                 <div class="dashboard-content">
                     <header class="dash-header">
                         <h2 id="welcome-msg">Bienvenido, Fundador</h2>
-                        <div class="chip" id="sheet-status">Vinculado a la Nube</div>
+                        <div class="chip" id="sheet-status">
+                            Vinculado a la Nube
+                        </div>
                     </header>
 
                     <div class="main-grid">
-                        <!-- Sales Chart Card -->
+                        <!-- Chart -->
                         <div class="m3-card chart-card">
-                            <h3>Rendimiento Reciente</h3>
+                            <h3>
+                                <span class="material-symbols-rounded">area_chart</span>
+                                Flujo de Ventas
+                            </h3>
                             <div class="chart-wrapper">
                                 <canvas id="salesChart"></canvas>
                             </div>
                         </div>
 
-                        <!-- Add Sale Form -->
+                        <!-- Form -->
                         <div class="m3-card form-card">
-                            <h3>Registrar Venta</h3>
+                            <h3>
+                                <span class="material-symbols-rounded">add_circle</span>
+                                Nueva Venta
+                            </h3>
                             <form id="sale-form">
                                 <div class="input-field">
                                     <input type="text" id="concepto" required placeholder=" ">
                                     <label>Concepto</label>
                                 </div>
                                 <div class="input-field">
-                                    <input type="number" id="monto" required placeholder=" ">
+                                    <input type="number" id="monto" required placeholder=" " step="0.01">
                                     <label>Monto ($)</label>
                                 </div>
                                 <div class="input-field">
@@ -120,6 +774,8 @@
                                         <option value="Servicio">Servicio</option>
                                         <option value="Producto">Producto</option>
                                         <option value="Suscripción">Suscripción</option>
+                                        <option value="Agencia">Agencia</option>
+                                        <option value="Consultoría">Consultoría</option>
                                     </select>
                                     <label>Categoría</label>
                                 </div>
@@ -127,11 +783,20 @@
                                     <input type="text" id="negocio-id" placeholder=" " value="BC-AGENCY">
                                     <label>Negocio ID</label>
                                 </div>
-                                <button type="submit" class="m3-btn filled full-width" id="submit-sale">
-                                    <span>Enviar a Google Sheets</span>
-                                    <span class="material-symbols-rounded">send</span>
+                                <button type="submit" class="m3-btn filled full-width ripple-host" id="submit-sale">
+                                    <span id="btn-label">Enviar a Google Sheets</span>
+                                    <span class="material-symbols-rounded" id="btn-icon">send</span>
                                 </button>
                             </form>
+                        </div>
+
+                        <!-- Goals Feed -->
+                        <div class="m3-card goals-card">
+                            <h3>
+                                <span class="material-symbols-rounded">emoji_events</span>
+                                Metas
+                            </h3>
+                            <div class="goals-feed" id="goals-feed"></div>
                         </div>
                     </div>
                 </div>
@@ -139,25 +804,293 @@
 
             <!-- Bottom Nav (Mobile) -->
             <nav class="bottom-nav">
-                <button class="nav-item active" data-view="overview">
-                    <span class="material-symbols-rounded">home</span>
-                    <span>Inicio</span>
+                <button class="nav-item active ripple-host" data-tab="overview">
+                    <span class="material-symbols-rounded">grid_view</span>
+                    Inicio
                 </button>
-                <button class="nav-item" data-view="add-sale">
-                    <span class="material-symbols-rounded">add_circle</span>
-                    <span>Venta</span>
+                <button class="nav-item ripple-host" data-tab="sales">
+                    <span class="material-symbols-rounded">receipt_long</span>
+                    Ventas
                 </button>
-                <button class="nav-item" id="mobile-logout-btn">
+                <button class="nav-item ripple-host" data-tab="goals">
+                    <span class="material-symbols-rounded">emoji_events</span>
+                    Metas
+                </button>
+                <button class="nav-item ripple-host" id="mobile-logout-btn">
                     <span class="material-symbols-rounded">logout</span>
-                    <span>Salir</span>
+                    Salir
                 </button>
             </nav>
         </section>
+
     </main>
 
-    <!-- Snackbar Container -->
-    <div id="snackbar" class="snackbar">Venta registrada en la nube</div>
+    <!-- Snackbar -->
+    <div id="snackbar" class="snackbar">
+        <span class="material-symbols-rounded">cloud_done</span>
+        <span id="snackbar-msg">Venta registrada en la nube</span>
+    </div>
 
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+    /* =============================================
+       FOUNDERDASH CORE — Preserved Logic + Enhanced UX
+    ============================================= */
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby0R25x7dwtNM53xaLIRxaKJlys9uoU6Amllma2u1-e3b8vNsYGs1iAaBItywVpiHch_Q/exec';
+    let chartInstance = null;
+    let deferredPrompt = null;
+
+    // ---- Ripple Effect ----
+    document.addEventListener('click', e => {
+        const btn = e.target.closest('.ripple-host');
+        if (!btn) return;
+        const r = document.createElement('span');
+        r.classList.add('ripple');
+        const rect = btn.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        r.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-rect.left-size/2}px;top:${e.clientY-rect.top-size/2}px`;
+        btn.appendChild(r);
+        r.addEventListener('animationend', () => r.remove());
+    });
+
+    // ---- View Transition ----
+    function showDashboard(name, picture) {
+        const landing = document.getElementById('landing-view');
+        const dash    = document.getElementById('dashboard-view');
+        landing.style.opacity = '0';
+        setTimeout(() => {
+            landing.classList.remove('active');
+            landing.style.display = 'none';
+            dash.style.display = 'block';
+            requestAnimationFrame(() => {
+                dash.classList.add('active');
+                dash.style.opacity = '1';
+            });
+        }, 400);
+
+        if (name)    document.getElementById('welcome-msg').textContent = `Bienvenido, ${name}`;
+        if (picture) {
+            const av = document.getElementById('user-avatar');
+            av.src = picture;
+            document.getElementById('user-profile').classList.remove('hidden');
+        }
+        initChart();
+        renderGoals();
+    }
+
+    // ---- Google Auth (preserved callback) ----
+    window.handleCredentialResponse = (response) => {
+        const payload = parseJwt(response.credential);
+
+        const client = google.accounts.oauth2.initTokenClient({
+            client_id: '387613368123-60jmf18v6m894q3srsevo2f6ssu4mo19.apps.googleusercontent.com',
+            scope: 'https://www.googleapis.com/auth/spreadsheets',
+            callback: (tokenResp) => {
+                if (tokenResp.access_token) {
+                    sessionStorage.setItem('fd_token', tokenResp.access_token);
+                    showSnackbar('Sheets conectado — bienvenido 🎉');
+                }
+            },
+        });
+        client.requestAccessToken();
+        showDashboard(payload.given_name, payload.picture);
+    };
+
+    function handleLogout() {
+        if (confirm('¿Cerrar sesión?')) {
+            sessionStorage.clear();
+            location.reload();
+        }
+    }
+
+    // ---- Form Submit + Sheets POST ----
+    document.getElementById('sale-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn     = document.getElementById('submit-sale');
+        const label   = document.getElementById('btn-label');
+        const icon    = document.getElementById('btn-icon');
+
+        btn.disabled  = true;
+        label.textContent = 'Cargando...';
+        icon.textContent  = 'sync';
+        icon.style.animation = 'spin 1s linear infinite';
+
+        const payload = {
+            concepto:  document.getElementById('concepto').value,
+            monto:     parseFloat(document.getElementById('monto').value),
+            categoria: document.getElementById('categoria').value,
+            negocioId: document.getElementById('negocio-id').value,
+            timestamp: new Date().toLocaleString('es-MX'),
+        };
+
+        try {
+            await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                mode:   'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body:   JSON.stringify(payload),
+            });
+            showSnackbar('Venta registrada en la nube');
+            pushToChart(payload);
+            e.target.reset();
+        } catch {
+            showSnackbar('Error de conexión');
+        } finally {
+            btn.disabled = false;
+            label.textContent = 'Enviar a Google Sheets';
+            icon.textContent  = 'send';
+            icon.style.animation = '';
+        }
+    });
+
+    // ---- Chart.js ----
+    function initChart() {
+        const ctx = document.getElementById('salesChart');
+        if (chartInstance) chartInstance.destroy();
+        chartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Ene','Feb','Mar','Abr','May','Jun'],
+                datasets: [{
+                    label: 'Ventas ($)',
+                    data: [3200, 5100, 4200, 7800, 6500, 9200],
+                    borderColor: '#D0BCFF',
+                    backgroundColor: (ctx) => {
+                        const g = ctx.chart.ctx.createLinearGradient(0,0,0,300);
+                        g.addColorStop(0, 'rgba(208,188,255,0.35)');
+                        g.addColorStop(1, 'rgba(208,188,255,0)');
+                        return g;
+                    },
+                    fill: true,
+                    tension: 0.5,
+                    borderWidth: 3,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#D0BCFF',
+                    pointBorderColor: '#0F0B1A',
+                    pointBorderWidth: 2,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(29,27,32,0.9)',
+                        borderColor: 'rgba(208,188,255,0.2)',
+                        borderWidth: 1,
+                        titleColor: '#D0BCFF',
+                        bodyColor: '#E6E1E5',
+                        padding: 12,
+                        cornerRadius: 12,
+                        callbacks: {
+                            label: ctx => ` $${ctx.parsed.y.toLocaleString('es-MX')}`
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        grid:  { color: 'rgba(208,188,255,0.06)' },
+                        ticks: { color: '#79747E', font: { family: 'Roboto', size: 11 } },
+                        border: { display: false }
+                    },
+                    x: {
+                        grid:  { display: false },
+                        ticks: { color: '#79747E', font: { family: 'Roboto', size: 11 } },
+                        border: { display: false }
+                    }
+                }
+            }
+        });
+    }
+
+    function pushToChart(data) {
+        if (!chartInstance) return;
+        const time = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+        chartInstance.data.labels.push(time);
+        chartInstance.data.datasets[0].data.push(data.monto);
+        if (chartInstance.data.labels.length > 10) {
+            chartInstance.data.labels.shift();
+            chartInstance.data.datasets[0].data.shift();
+        }
+        chartInstance.update();
+    }
+
+    // ---- Goals Feed ----
+    function renderGoals() {
+        const goals = [
+            { title: 'MacBook Pro M4',  target: 60000, current: 41000, img: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400&q=80' },
+            { title: 'Tokio 2026',      target: 130000, current: 38000, img: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=400&q=80' },
+            { title: 'Oficina Propia',  target: 200000, current: 94000, img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=400&q=80' },
+        ];
+        const feed = document.getElementById('goals-feed');
+        feed.innerHTML = goals.map(g => {
+            const pct = Math.min(100, Math.round((g.current / g.target) * 100));
+            return `<div class="goal-item">
+                <img class="goal-img" src="${g.img}" alt="${g.title}" loading="lazy">
+                <div class="goal-overlay">
+                    <h4>${g.title}</h4>
+                    <div class="goal-progress-bar">
+                        <div class="goal-fill" style="width:${pct}%"></div>
+                    </div>
+                    <span class="goal-pct">$${g.current.toLocaleString('es-MX')} · ${pct}%</span>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ---- Snackbar ----
+    function showSnackbar(msg) {
+        const sb = document.getElementById('snackbar');
+        document.getElementById('snackbar-msg').textContent = msg;
+        sb.classList.remove('show');
+        void sb.offsetWidth; // reflow
+        sb.classList.add('show');
+    }
+
+    // ---- Nav Tabs ----
+    document.querySelectorAll('.nav-item[data-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll(`.nav-item[data-tab="${btn.dataset.tab}"]`).forEach(b => b.classList.add('active'));
+        });
+    });
+
+    // ---- Logout ----
+    ['logout-btn','mobile-logout-btn'].forEach(id => {
+        document.getElementById(id)?.addEventListener('click', handleLogout);
+    });
+
+    // ---- Device Detection ----
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || window.innerWidth < 800;
+    document.getElementById(isMobile ? 'mobile-install-section' : 'desktop-pro-section').classList.remove('hidden');
+
+    // ---- PWA Install ----
+    window.addEventListener('beforeinstallprompt', e => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('install-btn')?.classList.remove('hidden');
+    });
+    document.getElementById('install-btn')?.addEventListener('click', async () => {
+        if (deferredPrompt) { deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt = null; }
+    });
+
+    // ---- Service Worker ----
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+
+    // ---- Helpers ----
+    function parseJwt(token) {
+        const b64 = token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+        return JSON.parse(decodeURIComponent(atob(b64).split('').map(c => '%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+    }
+    </script>
+
+    <style>
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
 </body>
 </html>
